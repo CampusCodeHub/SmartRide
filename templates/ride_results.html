@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review your submitted SmartRide journey details.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Your Journey | SmartRide</title>
+</head>
+<body>
+    <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a class="brand" href="/">
+                <span class="brand-icon">S</span>
+                SmartRide
+            </a>
+
+            <div class="nav-links">
+                <a href="/#features">Features</a>
+                <a href="/#how-it-works">How it works</a>
+            </div>
+
+            <a class="nav-button" href="/">Home</a>
+        </nav>
+    </header>
+
+    <main class="results-main">
+        <a
+            class="back-link"
+            href="{{ url_for(
+                'find_ride',
+                origin=journey.origin,
+                destination=journey.destination,
+                travel_date=journey.travel_date_iso,
+                departure_time=journey.departure_time,
+                max_detour=journey.max_detour,
+                passengers=journey.passengers,
+                edit=1
+            ) }}"
+        >← Edit journey details</a>
+
+        <section class="results-heading">
+            <span class="eyebrow">JOURNEY SUMMARY</span>
+            <h1>Your journey, at a glance.</h1>
+            <p>Check your details before we add ride matching.</p>
+        </section>
+
+        <section class="results-card">
+            <div class="results-route">
+                <div class="route-point">
+                    <span class="route-dot start-dot"></span>
+                    <div>
+                        <span class="detail-label">STARTING LOCATION</span>
+                        <h2>{{ journey.origin }}</h2>
+                    </div>
+                </div>
+
+                <div class="route-line"></div>
+
+                <div class="route-point">
+                    <span class="route-dot destination-dot"></span>
+                    <div>
+                        <span class="detail-label">DESTINATION</span>
+                        <h2>{{ journey.destination }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-details">
+                <div class="result-detail">
+                    <span class="detail-label">TRAVEL DATE</span>
+                    <strong>{{ journey.travel_date }}</strong>
+                </div>
+
+                <div class="result-detail">
+                    <span class="detail-label">DEPARTURE TIME</span>
+                    <strong>{{ journey.departure_time }}</strong>
+                </div>
+
+                <div class="result-detail">
+                    <span class="detail-label">MAXIMUM EXTRA TIME</span>
+                    <strong>{{ journey.max_detour }} minutes</strong>
+                </div>
+
+                <div class="result-detail">
+                    <span class="detail-label">PEOPLE TRAVELLING</span>
+                    <strong>{{ journey.passengers }}</strong>
+                </div>
+            </div>
+
+            <div class="results-notice">
+                <strong>Matching is coming next.</strong>
+                <p>
+                    Your journey details have passed validation. SmartRide
+                    does not search for live rides or store this submission yet.
+                </p>
+            </div>
+
+            <div class="results-actions">
+                <a
+                    class="button button-primary"
+                    href="{{ url_for(
+                        'find_ride',
+                        origin=journey.origin,
+                        destination=journey.destination,
+                        travel_date=journey.travel_date_iso,
+                        departure_time=journey.departure_time,
+                        max_detour=journey.max_detour,
+                        passengers=journey.passengers,
+                        edit=1
+                    ) }}"
+                >Edit journey</a>
+
+                <a class="button button-secondary" href="/">Back home</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand footer-brand" href="/">
+            <span class="brand-icon">S</span>
+            SmartRide
+        </a>
+        <p>Student journeys, made smarter.</p>
+        <span>SmartRide MSc project · Under development</span>
+    </footer>
+</body>
+</html>

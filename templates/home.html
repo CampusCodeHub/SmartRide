@@ -1,28 +1,190 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SmartRide helps students coordinate compatible shared journeys.">
+    <meta name="description" content="SmartRide helps students find compatible shared journeys, optimise pickups and estimate travel costs.">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>SmartRide | Student Ride Sharing</title>
 </head>
 <body>
-    <header>
-        <h1>SmartRide</h1>
-        <p>Intelligent Student Ride Group Optimisation</p>
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a class="brand" href="/" aria-label="SmartRide home">
+                <span class="brand-icon">S</span>
+                SmartRide
+            </a>
+
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How it works</a>
+            </div>
+
+            <a class="nav-button" href="#get-started">Get started</a>
+        </nav>
     </header>
 
     <main>
-    <section class="hero">
-        <h2>Share your journey. Travel smarter.</h2>
-        <p>
-            Find compatible journeys, coordinate pickups and explore
-            estimated shared costs with SmartRide.
-        </p>
-        <span class="status">SmartRide development server is running</span>
-    </section>
-</main>
+        <section class="hero" id="get-started">
+            <div class="hero-content">
+                <span class="eyebrow">
+                    Built for student journeys
+                </span>
+
+                <h1>Good journeys are better <span>shared.</span></h1>
+
+                <p class="hero-description">
+                    Find students travelling in the same direction, coordinate
+                    smarter pickups and explore estimated shared travel costs.
+                    Less hassle, more connected journeys.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="button button-primary" href="#how-it-works">
+                        Explore SmartRide <span aria-hidden="true">→</span>
+                    </a>
+                    <a class="button button-secondary" href="#features">
+                        Discover features
+                    </a>
+                </div>
+
+                <div class="hero-note">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span>SmartRide is under development</span>
+                </div>
+            </div>
+
+            <aside class="journey-card" aria-label="SmartRide journey preview">
+                <div class="journey-card-header">
+                    <div>
+                        <span class="card-label">YOUR NEXT JOURNEY</span>
+                        <h2>Better together</h2>
+                    </div>
+                    <span class="journey-icon" aria-hidden="true">↗</span>
+                </div>
+
+                <div class="route">
+                    <div class="route-marker">
+                        <span class="route-start"></span>
+                        <span class="route-line"></span>
+                        <span class="route-end"></span>
+                    </div>
+
+                    <div class="route-stops">
+                        <div class="route-stop">
+                            <span>Starting point</span>
+                            <strong>Your pickup location</strong>
+                        </div>
+                        <div class="route-stop destination">
+                            <span>Destination</span>
+                            <strong>University campus</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="journey-divider"></div>
+
+                <div class="journey-summary">
+                    <div>
+                        <span class="summary-icon" aria-hidden="true">⌖</span>
+                        <div>
+                            <strong>Smarter pickups</strong>
+                            <span>Planned around your journey</span>
+                        </div>
+                    </div>
+                    <span class="summary-arrow" aria-hidden="true">→</span>
+                </div>
+
+                <p class="preview-disclaimer">
+                    Illustrative preview — live journey data is not available yet.
+                </p>
+            </aside>
+        </section>
+
+        <section class="features-section" id="features">
+            <div class="section-heading">
+                <span class="eyebrow">WHY SMARTRIDE?</span>
+                <h2>Make every journey count.</h2>
+                <p>
+                    Designed to help students share journeys with greater
+                    convenience, clarity and confidence.
+                </p>
+            </div>
+
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <span class="feature-icon blue" aria-hidden="true">◎</span>
+                    <h3>Compatible groups</h3>
+                    <p>
+                        Find potential travel companions whose journeys and
+                        preferences fit yours.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-icon purple" aria-hidden="true">⌁</span>
+                    <h3>Smarter pickups</h3>
+                    <p>
+                        Explore pickup sequences that balance convenience
+                        and additional travel time.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-icon green" aria-hidden="true">£</span>
+                    <h3>Clear cost estimates</h3>
+                    <p>
+                        Understand estimated shared journey costs before
+                        deciding whether a match works for you.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="how-section" id="how-it-works">
+            <div class="section-heading">
+                <span class="eyebrow">SIMPLE BY DESIGN</span>
+                <h2>Your journey, in three steps.</h2>
+            </div>
+
+            <div class="steps-grid">
+                <article class="step">
+                    <span class="step-number">01</span>
+                    <h3>Share your journey</h3>
+                    <p>Choose your starting point, destination and travel preferences.</p>
+                </article>
+
+                <article class="step">
+                    <span class="step-number">02</span>
+                    <h3>Explore your matches</h3>
+                    <p>Review potential groups, pickup plans and estimated costs.</p>
+                </article>
+
+                <article class="step">
+                    <span class="step-number">03</span>
+                    <h3>Choose what works</h3>
+                    <p>Compare the options and choose a journey that suits your needs.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="closing-cta">
+            <div>
+                <span class="eyebrow">THE JOURNEY STARTS HERE</span>
+                <h2>A smarter way to travel together.</h2>
+                <p>We're building a better way for students to coordinate shared journeys.</p>
+            </div>
+            <a class="button button-light" href="#get-started">Back to top ↑</a>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand footer-brand" href="/">
+            <span class="brand-icon">S</span>
+            SmartRide
+        </a>
+        <p>Student journeys, made smarter.</p>
+        <span>SmartRide MSc project · Under development</span>
+    </footer>
 </body>
 </html>

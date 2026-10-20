@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enter your journey preferences to explore shared student rides with SmartRide.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Find a Ride | SmartRide</title>
+</head>
+<body>
+    <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a class="brand" href="/">
+                <span class="brand-icon">S</span>
+                SmartRide
+            </a>
+
+            <div class="nav-links">
+                <a href="/#features">Features</a>
+                <a href="/#how-it-works">How it works</a>
+            </div>
+
+            <a class="nav-button" href="/">Home</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="search-intro">
+            <a class="back-link" href="/">← Back to homepage</a>
+            <span class="eyebrow">PLAN YOUR JOURNEY</span>
+            <h1>Where are you heading?</h1>
+            <p>
+                Tell us about your trip so we can help you explore
+                compatible shared journeys.
+            </p>
+        </section>
+
+        <section class="search-layout">
+            <form class="ride-form" action="/find-ride" method="GET">
+                <div class="form-heading">
+                    <div>
+                        <h2>Your journey details</h2>
+                        <p>Enter your preferred travel details below.</p>
+                    </div>
+                    <span class="form-step">STEP 1 OF 2</span>
+                </div>
+
+                {% if error %}
+                    <div class="form-notice" role="alert">
+                        <span aria-hidden="true">ⓘ</span>
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="form-grid">
+                    <div class="form-field full-width">
+                        <label for="origin">Starting location</label>
+                        <input
+                            type="text"
+                            id="origin"
+                            name="origin"
+                            placeholder="e.g. Edinburgh Waverley"
+                            autocomplete="street-address"
+                            required
+                            maxlength="200"
+                            value="{{ form_data.get('origin', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-field full-width">
+                        <label for="destination">Destination</label>
+                        <input
+                            type="text"
+                            id="destination"
+                            name="destination"
+                            placeholder="e.g. Edinburgh Napier University"
+                            required
+                            maxlength="200"
+                            value="{{ form_data.get('destination', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label for="travel_date">Travel date</label>
+                        <input
+                            type="date"
+                            id="travel_date"
+                            name="travel_date"
+                            min="{{ today }}"
+                            required
+                            value="{{ form_data.get('travel_date', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label for="departure_time">Departure time</label>
+                        <input
+                            type="time"
+                            id="departure_time"
+                            name="departure_time"
+                            required
+                            value="{{ form_data.get('departure_time', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label for="max_detour">Maximum extra travel time</label>
+
+                        {% set selected_detour = form_data.get('max_detour', '10') if form_data else '10' %}
+
+                        <select id="max_detour" name="max_detour" required>
+                            <option value="5" {% if selected_detour == '5' %}selected{% endif %}>Up to 5 minutes</option>
+                            <option value="10" {% if selected_detour == '10' %}selected{% endif %}>Up to 10 minutes</option>
+                            <option value="15" {% if selected_detour == '15' %}selected{% endif %}>Up to 15 minutes</option>
+                            <option value="20" {% if selected_detour == '20' %}selected{% endif %}>Up to 20 minutes</option>
+                            <option value="30" {% if selected_detour == '30' %}selected{% endif %}>Up to 30 minutes</option>
+                        </select>
+
+                        <span class="field-hint">
+                            Your tolerance for additional journey time.
+                        </span>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="passengers">People travelling, including you</label>
+
+                        {% set selected_passengers = form_data.get('passengers', '1') if form_data else '1' %}
+
+                        <select id="passengers" name="passengers" required>
+                            <option value="1" {% if selected_passengers == '1' %}selected{% endif %}>1 person</option>
+                            <option value="2" {% if selected_passengers == '2' %}selected{% endif %}>2 people</option>
+                            <option value="3" {% if selected_passengers == '3' %}selected{% endif %}>3 people</option>
+                            <option value="4" {% if selected_passengers == '4' %}selected{% endif %}>4 people</option>
+                            <option value="5" {% if selected_passengers == '5' %}selected{% endif %}>5 people</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-notice">
+                    <span aria-hidden="true">ⓘ</span>
+                    <p>
+                        This is an early prototype. Submitting the form will
+                        not book a ride or find live matches yet.
+                    </p>
+                </div>
+
+                <button class="button button-primary submit-button" type="submit">
+                    Continue <span aria-hidden="true">→</span>
+                </button>
+            </form>
+
+            <aside class="search-sidebar">
+                <div class="sidebar-icon" aria-hidden="true">⌖</div>
+                <h2>Travel smarter together.</h2>
+                <p>
+                    SmartRide is designed to help students explore shared
+                    journeys with practical pickup plans and transparent
+                    estimated costs.
+                </p>
+
+                <div class="sidebar-benefit">
+                    <span>✓</span>
+                    <div>
+                        <strong>Compatible journeys</strong>
+                        <p>Find potential travel companions.</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-benefit">
+                    <span>✓</span>
+                    <div>
+                        <strong>Detour-aware planning</strong>
+                        <p>Set the extra time you're comfortable with.</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-benefit">
+                    <span>✓</span>
+                    <div>
+                        <strong>Cost transparency</strong>
+                        <p>Explore estimated shared travel costs as the platform develops.</p>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand footer-brand" href="/">
+            <span class="brand-icon">S</span>
+            SmartRide
+        </a>
+        <p>Student journeys, made smarter.</p>
+        <span>SmartRide MSc project · Under development</span>
+    </footer>
+</body>
+</html>
