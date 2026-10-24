@@ -1,3 +1,6 @@
+
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from app import app
@@ -105,3 +108,38 @@ def test_find_ride_rejects_invalid_passenger_count(client):
 
     assert response.status_code == 400
     assert b"Please select a valid passenger count." in response.data
+
+
+def test_db_health_endpoint_success(client):
+    mock_connection = MagicMock()
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = {"database_name": "test"}
+
+    with patch("app.get_db_connection", return_value=mock_connection):
+        response = client.get("/db-health")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "application": "SmartRide",
+        "database_status": "connected",
+        "database": "test",
+    }
+    mock_cursor.execute.assert_called_once_with(
+        "SELECT DATABASE() AS database_name"
+    )
+    mock_connection.close.assert_called_once()
+
+
+def test_db_health_endpoint_failure(client):
+    with patch(
+        "app.get_db_connection",
+        side_effect=Exception("Simulated database failure"),
+    ):
+        response = client.get("/db-health")
+
+    assert response.status_code == 503
+    assert response.get_json() == {
+        "application": "SmartRide",
+        "database_status": "unavailable",
+    }
