@@ -1,4 +1,5 @@
 
+from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -65,7 +66,9 @@ def test_find_ride_rejects_missing_locations(client):
         query_string={
             "origin": "",
             "destination": "",
-            "travel_date": "2026-10-24",
+            "travel_date": (
+                date.today() + timedelta(days=1)
+            ).isoformat(),
             "departure_time": "12:43",
             "max_detour": "5",
             "passengers": "4",
@@ -99,7 +102,9 @@ def test_find_ride_rejects_invalid_passenger_count(client):
         query_string={
             "origin": "Edinburgh Waverley",
             "destination": "Arthur's Seat",
-            "travel_date": "2026-10-24",
+            "travel_date": (
+                date.today() + timedelta(days=1)
+            ).isoformat(),
             "departure_time": "12:43",
             "max_detour": "5",
             "passengers": "10",

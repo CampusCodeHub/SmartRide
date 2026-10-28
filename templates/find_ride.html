@@ -10,6 +10,7 @@
 </head>
 <body>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+
     <header class="site-header">
         <nav class="navbar" aria-label="Main navigation">
             <a class="brand" href="/">
@@ -48,8 +49,8 @@
                 </div>
 
                 {% if error %}
-                    <div class="form-notice" role="alert">
-                        <span aria-hidden="true">ⓘ</span>
+                    <div class="form-notice form-error" role="alert">
+                        <span aria-hidden="true">⚠</span>
                         <p>{{ error }}</p>
                     </div>
                 {% endif %}

@@ -47,6 +47,7 @@ def find_ride():
     passengers = request.args.get("passengers", "")
 
     error = None
+    selected_date = None
 
     # Validate locations.
     if not origin or not destination:
@@ -55,8 +56,6 @@ def find_ride():
         error = "Locations must be 200 characters or fewer."
 
     # Validate the travel date.
-    selected_date = None
-
     if error is None:
         try:
             selected_date = date.fromisoformat(travel_date)
@@ -82,11 +81,20 @@ def find_ride():
 
     # Redisplay the form with submitted values if validation fails.
     if error:
+        submitted_form_data = {
+            "origin": origin,
+            "destination": destination,
+            "travel_date": travel_date,
+            "departure_time": departure_time,
+            "max_detour": max_detour,
+            "passengers": passengers,
+        }
+
         return render_template(
             "find_ride.html",
             today=today,
             error=error,
-            form_data=form_data,
+            form_data=submitted_form_data,
         ), 400
 
     journey = {
