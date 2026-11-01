@@ -3,7 +3,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from db import create_ride_request, get_or_create_user
+from db import (
+    create_ride_request,
+    get_or_create_user,
+    get_user_by_clerk_id,
+)
 
 
 @pytest.fixture
@@ -25,6 +29,10 @@ def test_create_ride_request_success(mock_database):
         passenger_id=1,
         origin="Edinburgh Waverley",
         destination="Edinburgh Napier University",
+        origin_latitude=55.9521,
+        origin_longitude=-3.1889,
+        destination_latitude=55.9225,
+        destination_longitude=-3.1722,
         travel_date="2026-11-15",
         departure_time="09:30",
         passenger_count=2,
@@ -34,13 +42,23 @@ def test_create_ride_request_success(mock_database):
     assert request_id == 42
 
     cursor.execute.assert_called_once()
+
     sql, values = cursor.execute.call_args.args
 
     assert "INSERT INTO ride_requests" in sql
+    assert "origin_latitude" in sql
+    assert "origin_longitude" in sql
+    assert "destination_latitude" in sql
+    assert "destination_longitude" in sql
+
     assert values == (
         1,
         "Edinburgh Waverley",
+        55.9521,
+        -3.1889,
         "Edinburgh Napier University",
+        55.9225,
+        -3.1722,
         "2026-11-15",
         "09:30",
         2,
@@ -54,6 +72,7 @@ def test_create_ride_request_success(mock_database):
 
 def test_create_ride_request_rolls_back_on_failure(mock_database):
     connection, cursor = mock_database
+
     cursor.execute.side_effect = Exception("Simulated insert failure")
 
     with pytest.raises(Exception, match="Simulated insert failure"):
@@ -61,6 +80,10 @@ def test_create_ride_request_rolls_back_on_failure(mock_database):
             passenger_id=1,
             origin="Edinburgh Waverley",
             destination="Edinburgh Napier University",
+            origin_latitude=55.9521,
+            origin_longitude=-3.1889,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
             travel_date="2026-11-15",
             departure_time="09:30",
             passenger_count=2,
@@ -72,8 +95,99 @@ def test_create_ride_request_rolls_back_on_failure(mock_database):
     connection.close.assert_called_once()
 
 
+def test_create_ride_request_rejects_invalid_latitude(mock_database):
+    connection, cursor = mock_database
+
+    with pytest.raises(ValueError, match="Invalid origin latitude"):
+        create_ride_request(
+            passenger_id=1,
+            origin="Edinburgh Waverley",
+            destination="Edinburgh Napier University",
+            origin_latitude=95,
+            origin_longitude=-3.1889,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
+            travel_date="2026-11-15",
+            departure_time="09:30",
+            passenger_count=2,
+            max_detour_minutes=15,
+        )
+
+    connection.commit.assert_not_called()
+    connection.rollback.assert_not_called()
+    connection.close.assert_not_called()
+    cursor.execute.assert_not_called()
+
+
+def test_create_ride_request_rejects_invalid_longitude(mock_database):
+    connection, cursor = mock_database
+
+    with pytest.raises(ValueError, match="Invalid origin longitude"):
+        create_ride_request(
+            passenger_id=1,
+            origin="Edinburgh Waverley",
+            destination="Edinburgh Napier University",
+            origin_latitude=55.9521,
+            origin_longitude=200,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
+            travel_date="2026-11-15",
+            departure_time="09:30",
+            passenger_count=2,
+            max_detour_minutes=15,
+        )
+
+    cursor.execute.assert_not_called()
+    connection.commit.assert_not_called()
+
+
+def test_create_ride_request_rejects_non_numeric_coordinates(mock_database):
+    connection, cursor = mock_database
+
+    with pytest.raises(ValueError, match="Invalid origin latitude"):
+        create_ride_request(
+            passenger_id=1,
+            origin="Edinburgh Waverley",
+            destination="Edinburgh Napier University",
+            origin_latitude="not-a-coordinate",
+            origin_longitude=-3.1889,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
+            travel_date="2026-11-15",
+            departure_time="09:30",
+            passenger_count=2,
+            max_detour_minutes=15,
+        )
+
+    cursor.execute.assert_not_called()
+    connection.commit.assert_not_called()
+
+
+def test_create_ride_request_rejects_infinite_coordinates(mock_database):
+    connection, cursor = mock_database
+
+    with pytest.raises(ValueError, match="Invalid origin latitude"):
+        create_ride_request(
+            passenger_id=1,
+            origin="Edinburgh Waverley",
+            destination="Edinburgh Napier University",
+            origin_latitude=float("inf"),
+            origin_longitude=-3.1889,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
+            travel_date="2026-11-15",
+            departure_time="09:30",
+            passenger_count=2,
+            max_detour_minutes=15,
+        )
+
+    cursor.execute.assert_not_called()
+    connection.commit.assert_not_called()
+
+
 def test_get_or_create_user_success(mock_database):
     connection, cursor = mock_database
+
     expected_user = {
         "id": 42,
         "clerk_user_id": "user_test123",
@@ -83,6 +197,7 @@ def test_get_or_create_user_success(mock_database):
         "verification_status": "pending",
         "account_status": "active",
     }
+
     cursor.fetchone.return_value = expected_user
 
     user = get_or_create_user(
@@ -96,8 +211,10 @@ def test_get_or_create_user_success(mock_database):
     assert cursor.execute.call_count == 2
 
     insert_sql, insert_values = cursor.execute.call_args_list[0].args
+
     assert "INSERT INTO users" in insert_sql
     assert "ON DUPLICATE KEY UPDATE" in insert_sql
+
     assert insert_values == (
         "user_test123",
         "Test Student",
@@ -106,6 +223,7 @@ def test_get_or_create_user_success(mock_database):
     )
 
     select_sql, select_values = cursor.execute.call_args_list[1].args
+
     assert "SELECT" in select_sql
     assert "WHERE clerk_user_id = %s" in select_sql
     assert select_values == ("user_test123",)
@@ -117,6 +235,7 @@ def test_get_or_create_user_success(mock_database):
 
 def test_get_or_create_user_returns_existing_user(mock_database):
     connection, cursor = mock_database
+
     existing_user = {
         "id": 12,
         "clerk_user_id": "user_existing123",
@@ -126,6 +245,7 @@ def test_get_or_create_user_returns_existing_user(mock_database):
         "verification_status": "pending",
         "account_status": "active",
     }
+
     cursor.fetchone.return_value = existing_user
 
     user = get_or_create_user(
@@ -138,6 +258,7 @@ def test_get_or_create_user_returns_existing_user(mock_database):
     assert user["id"] == 12
     assert user["clerk_user_id"] == "user_existing123"
     assert cursor.execute.call_count == 2
+
     connection.commit.assert_called_once()
     connection.rollback.assert_not_called()
     connection.close.assert_called_once()
@@ -170,6 +291,7 @@ def test_get_or_create_user_rejects_missing_profile_fields(
         "display_name": "Test Student",
         "university": "Edinburgh Napier University",
     }
+
     profile[field] = value
 
     with pytest.raises(ValueError, match=message):
@@ -178,6 +300,7 @@ def test_get_or_create_user_rejects_missing_profile_fields(
 
 def test_get_or_create_user_rolls_back_on_database_failure(mock_database):
     connection, cursor = mock_database
+
     cursor.execute.side_effect = Exception("Simulated database failure")
 
     with pytest.raises(Exception, match="Simulated database failure"):
@@ -190,4 +313,72 @@ def test_get_or_create_user_rolls_back_on_database_failure(mock_database):
 
     connection.commit.assert_not_called()
     connection.rollback.assert_called_once()
+    connection.close.assert_called_once()
+
+
+def test_get_user_by_clerk_id_success(mock_database):
+    connection, cursor = mock_database
+
+    expected_user = {
+        "id": 42,
+        "clerk_user_id": "user_test123",
+        "display_name": "Test Student",
+        "email": "student@example.com",
+        "university": "Edinburgh Napier University",
+        "verification_status": "pending",
+        "account_status": "active",
+    }
+
+    cursor.fetchone.return_value = expected_user
+
+    user = get_user_by_clerk_id("user_test123")
+
+    assert user == expected_user
+
+    cursor.execute.assert_called_once()
+
+    sql, values = cursor.execute.call_args.args
+
+    assert "SELECT" in sql
+    assert "FROM users" in sql
+    assert "WHERE clerk_user_id = %s" in sql
+    assert values == ("user_test123",)
+
+    connection.close.assert_called_once()
+    connection.commit.assert_not_called()
+
+
+def test_get_user_by_clerk_id_returns_none_when_not_found(mock_database):
+    connection, cursor = mock_database
+
+    cursor.fetchone.return_value = None
+
+    user = get_user_by_clerk_id("user_missing123")
+
+    assert user is None
+
+    cursor.execute.assert_called_once()
+
+    sql, values = cursor.execute.call_args.args
+
+    assert "FROM users" in sql
+    assert "WHERE clerk_user_id = %s" in sql
+    assert values == ("user_missing123",)
+
+    connection.close.assert_called_once()
+
+
+def test_get_user_by_clerk_id_rejects_invalid_clerk_id():
+    with pytest.raises(ValueError, match="valid Clerk user ID"):
+        get_user_by_clerk_id("invalid_id")
+
+
+def test_get_user_by_clerk_id_closes_connection_on_failure(mock_database):
+    connection, cursor = mock_database
+
+    cursor.execute.side_effect = Exception("Simulated database failure")
+
+    with pytest.raises(Exception, match="Simulated database failure"):
+        get_user_by_clerk_id("user_test123")
+
     connection.close.assert_called_once()

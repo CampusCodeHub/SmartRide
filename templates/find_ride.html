@@ -4,18 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Enter your journey preferences to explore shared student rides with SmartRide.">
+    <meta name="description" content="Plan a smarter shared student journey with SmartRide.">
+    <meta name="theme-color" content="#101a20">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
     <title>Find a Ride | SmartRide</title>
 </head>
-<body>
-    <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
 
-    <header class="site-header">
+<body class="journey-page">
+
+    <header class="site-header journey-header">
         <nav class="navbar" aria-label="Main navigation">
-            <a class="brand" href="/">
+
+            <a class="brand journey-brand" href="/" aria-label="SmartRide home">
                 <span class="brand-icon">S</span>
-                SmartRide
+                <span>smart<span class="brand-highlight">ride.</span></span>
             </a>
 
             <div class="nav-links">
@@ -23,41 +31,69 @@
                 <a href="/#how-it-works">How it works</a>
             </div>
 
-            <a class="nav-button" href="/">Home</a>
+            <a class="nav-button journey-home-button" href="/">
+                Home <span aria-hidden="true">↗</span>
+            </a>
+
         </nav>
     </header>
 
-    <main>
-        <section class="search-intro">
-            <a class="back-link" href="/">← Back to homepage</a>
+
+    <main class="journey-main">
+
+        <section class="journey-intro">
             <span class="eyebrow">PLAN YOUR JOURNEY</span>
-            <h1>Where are you heading?</h1>
+
+            <h1>Where are you <span>heading?</span></h1>
+
             <p>
                 Tell us about your trip so we can help you explore
                 compatible shared journeys.
             </p>
+
+            <div class="journey-progress" aria-label="Step 1 of 2">
+                <span class="progress-active"></span>
+                <span></span>
+                <small>STEP 1 OF 2</small>
+            </div>
         </section>
 
-        <section class="search-layout">
-            <form class="ride-form" action="/find-ride" method="GET">
-                <div class="form-heading">
+
+        <section class="journey-search-layout">
+
+            <form class="journey-form-card"
+                  action="{{ url_for('find_ride') }}"
+                  method="POST">
+
+                <div class="journey-form-heading">
                     <div>
+                        <span class="eyebrow">YOUR TRIP DETAILS</span>
                         <h2>Your journey details</h2>
                         <p>Enter your preferred travel details below.</p>
                     </div>
-                    <span class="form-step">STEP 1 OF 2</span>
+
+                    <span class="journey-heading-icon" aria-hidden="true">
+                        ↗
+                    </span>
                 </div>
 
+
                 {% if error %}
-                    <div class="form-notice form-error" role="alert">
-                        <span aria-hidden="true">⚠</span>
+                    <div class="journey-error" role="alert">
+                        <span aria-hidden="true">!</span>
                         <p>{{ error }}</p>
                     </div>
                 {% endif %}
 
-                <div class="form-grid">
-                    <div class="form-field full-width">
-                        <label for="origin">Starting location</label>
+
+                <div class="journey-fields">
+
+                    <div class="journey-field full-width">
+                        <label for="origin">
+                            <span class="field-icon" aria-hidden="true">⌖</span>
+                            Starting location
+                        </label>
+
                         <input
                             type="text"
                             id="origin"
@@ -66,12 +102,16 @@
                             autocomplete="street-address"
                             required
                             maxlength="200"
-                            value="{{ form_data.get('origin', '') if form_data else '' }}"
-                        >
+                            value="{{ form_data.get('origin', '') if form_data else '' }}">
                     </div>
 
-                    <div class="form-field full-width">
-                        <label for="destination">Destination</label>
+
+                    <div class="journey-field full-width">
+                        <label for="destination">
+                            <span class="field-icon" aria-hidden="true">◎</span>
+                            Destination
+                        </label>
+
                         <input
                             type="text"
                             id="destination"
@@ -79,35 +119,46 @@
                             placeholder="e.g. Edinburgh Napier University"
                             required
                             maxlength="200"
-                            value="{{ form_data.get('destination', '') if form_data else '' }}"
-                        >
+                            value="{{ form_data.get('destination', '') if form_data else '' }}">
                     </div>
 
-                    <div class="form-field">
-                        <label for="travel_date">Travel date</label>
+
+                    <div class="journey-field">
+                        <label for="travel_date">
+                            <span class="field-icon" aria-hidden="true">▦</span>
+                            Travel date
+                        </label>
+
                         <input
                             type="date"
                             id="travel_date"
                             name="travel_date"
                             min="{{ today }}"
                             required
-                            value="{{ form_data.get('travel_date', '') if form_data else '' }}"
-                        >
+                            value="{{ form_data.get('travel_date', '') if form_data else '' }}">
                     </div>
 
-                    <div class="form-field">
-                        <label for="departure_time">Departure time</label>
+
+                    <div class="journey-field">
+                        <label for="departure_time">
+                            <span class="field-icon" aria-hidden="true">◷</span>
+                            Departure time
+                        </label>
+
                         <input
                             type="time"
                             id="departure_time"
                             name="departure_time"
                             required
-                            value="{{ form_data.get('departure_time', '') if form_data else '' }}"
-                        >
+                            value="{{ form_data.get('departure_time', '') if form_data else '' }}">
                     </div>
 
-                    <div class="form-field">
-                        <label for="max_detour">Maximum extra travel time</label>
+
+                    <div class="journey-field">
+                        <label for="max_detour">
+                            <span class="field-icon" aria-hidden="true">⌁</span>
+                            Maximum extra travel time
+                        </label>
 
                         {% set selected_detour = form_data.get('max_detour', '10') if form_data else '10' %}
 
@@ -119,13 +170,17 @@
                             <option value="30" {% if selected_detour == '30' %}selected{% endif %}>Up to 30 minutes</option>
                         </select>
 
-                        <span class="field-hint">
+                        <span class="journey-field-hint">
                             Your tolerance for additional journey time.
                         </span>
                     </div>
 
-                    <div class="form-field">
-                        <label for="passengers">People travelling, including you</label>
+
+                    <div class="journey-field">
+                        <label for="passengers">
+                            <span class="field-icon" aria-hidden="true">♧</span>
+                            People travelling, including you
+                        </label>
 
                         {% set selected_passengers = form_data.get('passengers', '1') if form_data else '1' %}
 
@@ -137,64 +192,92 @@
                             <option value="5" {% if selected_passengers == '5' %}selected{% endif %}>5 people</option>
                         </select>
                     </div>
+
                 </div>
 
-                <div class="form-notice">
+
+                <div class="journey-prototype-note">
                     <span aria-hidden="true">ⓘ</span>
                     <p>
-                        This is an early prototype. Submitting the form will
-                        not book a ride or find live matches yet.
+                        Your journey will be saved to SmartRide.
+                        Sign in and complete your student profile before submitting.
                     </p>
                 </div>
 
-                <button class="button button-primary submit-button" type="submit">
-                    Continue <span aria-hidden="true">→</span>
+
+                <button class="journey-submit-button" type="submit">
+                    Find compatible journeys
+                    <span aria-hidden="true">↗</span>
                 </button>
+
             </form>
 
-            <aside class="search-sidebar">
-                <div class="sidebar-icon" aria-hidden="true">⌖</div>
+
+            <aside class="journey-side-card">
+
+                <div class="journey-side-top">
+                    <span class="journey-side-icon" aria-hidden="true">✳</span>
+                    <span class="eyebrow">THE SMART WAY TO TRAVEL</span>
+                </div>
+
                 <h2>Travel smarter together.</h2>
-                <p>
+
+                <p class="journey-side-description">
                     SmartRide is designed to help students explore shared
                     journeys with practical pickup plans and transparent
                     estimated costs.
                 </p>
 
-                <div class="sidebar-benefit">
-                    <span>✓</span>
+
+                <div class="journey-benefit">
+                    <span class="benefit-check">✓</span>
                     <div>
                         <strong>Compatible journeys</strong>
                         <p>Find potential travel companions.</p>
                     </div>
                 </div>
 
-                <div class="sidebar-benefit">
-                    <span>✓</span>
+                <div class="journey-benefit">
+                    <span class="benefit-check">✓</span>
                     <div>
                         <strong>Detour-aware planning</strong>
                         <p>Set the extra time you're comfortable with.</p>
                     </div>
                 </div>
 
-                <div class="sidebar-benefit">
-                    <span>✓</span>
+                <div class="journey-benefit">
+                    <span class="benefit-check">✓</span>
                     <div>
                         <strong>Cost transparency</strong>
                         <p>Explore estimated shared travel costs as the platform develops.</p>
                     </div>
                 </div>
+
+
+                <div class="journey-side-footer">
+                    <span class="side-footer-dot"></span>
+                    DESIGNED AROUND STUDENT JOURNEYS
+                </div>
+
             </aside>
+
         </section>
+
     </main>
 
-    <footer class="site-footer">
-        <a class="brand footer-brand" href="/">
+
+    <footer class="journey-footer">
+
+        <a class="brand journey-brand" href="/">
             <span class="brand-icon">S</span>
-            SmartRide
+            <span>smart<span class="brand-highlight">ride.</span></span>
         </a>
+
         <p>Student journeys, made smarter.</p>
+
         <span>SmartRide MSc project · Under development</span>
+
     </footer>
+
 </body>
 </html>

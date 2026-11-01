@@ -1,20 +1,29 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Review your submitted SmartRide journey details.">
+    <meta name="description" content="Review your SmartRide journey details.">
+    <meta name="theme-color" content="#101a20">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
     <title>Your Journey | SmartRide</title>
 </head>
-<body>
-    <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
 
-    <header class="site-header">
+<body class="journey-page results-page">
+
+    <header class="site-header journey-header">
         <nav class="navbar" aria-label="Main navigation">
-            <a class="brand" href="/">
+
+            <a class="brand journey-brand" href="/" aria-label="SmartRide home">
                 <span class="brand-icon">S</span>
-                SmartRide
+                <span>smart<span class="brand-highlight">ride.</span></span>
             </a>
 
             <div class="nav-links">
@@ -22,109 +31,212 @@
                 <a href="/#how-it-works">How it works</a>
             </div>
 
-            <a class="nav-button" href="/">Home</a>
+            <a class="nav-button journey-home-button" href="/">
+                Home <span aria-hidden="true">↗</span>
+            </a>
+
         </nav>
     </header>
 
-    <main class="results-main">
-        <a
-            class="back-link"
-            href="{{ url_for(
-                'find_ride',
-                origin=journey.origin,
-                destination=journey.destination,
-                travel_date=journey.travel_date_iso,
-                departure_time=journey.departure_time,
-                max_detour=journey.max_detour,
-                passengers=journey.passengers,
-                edit=1
-            ) }}"
-        >← Edit journey details</a>
 
-        <section class="results-heading">
+    <main class="journey-main results-main">
+
+        <section class="results-intro">
+
             <span class="eyebrow">JOURNEY SUMMARY</span>
-            <h1>Your journey, at a glance.</h1>
-            <p>Check your details before we add ride matching.</p>
-        </section>
 
-        <section class="results-card">
-            <div class="results-route">
-                <div class="route-point">
-                    <span class="route-dot start-dot"></span>
-                    <div>
-                        <span class="detail-label">STARTING LOCATION</span>
-                        <h2>{{ journey.origin }}</h2>
-                    </div>
-                </div>
+            <h1>Your journey, <span>at a glance.</span></h1>
 
-                <div class="route-line"></div>
+            <p>Check your details before exploring compatible journeys.</p>
 
-                <div class="route-point">
-                    <span class="route-dot destination-dot"></span>
-                    <div>
-                        <span class="detail-label">DESTINATION</span>
-                        <h2>{{ journey.destination }}</h2>
-                    </div>
-                </div>
+            <div class="journey-progress results-progress" aria-label="Step 2 of 2">
+                <span class="progress-active"></span>
+                <span class="progress-active"></span>
+                <small>STEP 2 OF 2</small>
             </div>
 
-            <div class="results-details">
-                <div class="result-detail">
-                    <span class="detail-label">TRAVEL DATE</span>
+        </section>
+
+
+        <section class="results-card">
+
+            <div class="results-card-header">
+                <div>
+                    <span class="eyebrow">YOUR ROUTE</span>
+                    <h2>{% if saved %}Journey saved!{% else %}Looking good.{% endif %}</h2>
+                    <p>
+                        {% if saved %}
+                            Your journey request has been saved successfully.
+                        {% else %}
+                            Here's the journey you've planned.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <span class="results-status">
+                    <span></span>
+                    {% if saved %}SAVED{% else %}DETAILS VALIDATED{% endif %}
+                </span>
+            </div>
+
+
+            {% if saved %}
+                <div class="matching-coming-note">
+                    <span class="matching-note-icon" aria-hidden="true">✓</span>
+                    <div>
+                        <strong>Request #{{ journey.request_id }} saved successfully.</strong>
+                        <p>
+                            Your journey and geographic coordinates are now
+                            stored in SmartRide. Compatible journey matching
+                            is the next development stage.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+
+
+            <div class="results-route">
+
+                <div class="results-route-line">
+
+                    <div class="results-route-point start-point">
+                        <span class="route-point-marker"></span>
+
+                        <div>
+                            <span>STARTING LOCATION</span>
+                            <strong>{{ journey.origin }}</strong>
+
+                            {% if journey.origin_display_name %}
+                                <small>{{ journey.origin_display_name }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="results-route-connector"></div>
+
+                    <div class="results-route-point end-point">
+                        <span class="route-point-marker"></span>
+
+                        <div>
+                            <span>DESTINATION</span>
+                            <strong>{{ journey.destination }}</strong>
+
+                            {% if journey.destination_display_name %}
+                                <small>{{ journey.destination_display_name }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="results-route-decoration" aria-hidden="true">
+                    <span>↗</span>
+                </div>
+
+            </div>
+
+
+            <div class="results-detail-grid">
+
+                <div class="results-detail">
+                    <span>TRAVEL DATE</span>
                     <strong>{{ journey.travel_date }}</strong>
                 </div>
 
-                <div class="result-detail">
-                    <span class="detail-label">DEPARTURE TIME</span>
+                <div class="results-detail">
+                    <span>DEPARTURE TIME</span>
                     <strong>{{ journey.departure_time }}</strong>
                 </div>
 
-                <div class="result-detail">
-                    <span class="detail-label">MAXIMUM EXTRA TIME</span>
+                <div class="results-detail">
+                    <span>MAXIMUM EXTRA TIME</span>
                     <strong>{{ journey.max_detour }} minutes</strong>
                 </div>
 
-                <div class="result-detail">
-                    <span class="detail-label">PEOPLE TRAVELLING</span>
+                <div class="results-detail">
+                    <span>PEOPLE TRAVELLING</span>
                     <strong>{{ journey.passengers }}</strong>
                 </div>
+
             </div>
 
-            <div class="results-notice">
-                <strong>Matching is coming next.</strong>
-                <p>
-                    Your journey details have passed validation. SmartRide
-                    does not search for live rides or store this submission yet.
-                </p>
-            </div>
+
+            {% if not saved %}
+                <div class="matching-coming-note">
+                    <span class="matching-note-icon" aria-hidden="true">✳</span>
+
+                    <div>
+                        <strong>Preview only.</strong>
+                        <p>
+                            These details have passed validation, but this
+                            preview has not been saved to the database.
+                        </p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="matching-coming-note">
+                    <span class="matching-note-icon" aria-hidden="true">✳</span>
+
+                    <div>
+                        <strong>Matching is coming next.</strong>
+                        <p>
+                            SmartRide has saved your request. It does not
+                            yet search for compatible live journeys.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+
 
             <div class="results-actions">
-                <a
-                    class="button button-primary"
-                    href="{{ url_for(
-                        'find_ride',
-                        origin=journey.origin,
-                        destination=journey.destination,
-                        travel_date=journey.travel_date_iso,
-                        departure_time=journey.departure_time,
-                        max_detour=journey.max_detour,
-                        passengers=journey.passengers,
-                        edit=1
-                    ) }}"
-                >Edit journey</a>
 
-                <a class="button button-secondary" href="/">Back home</a>
+                {% if not saved %}
+                    <a
+                        class="results-edit-button"
+                        href="{{ url_for(
+                            'find_ride',
+                            origin=journey.origin,
+                            destination=journey.destination,
+                            travel_date=journey.travel_date_iso,
+                            departure_time=journey.departure_time,
+                            max_detour=journey.max_detour,
+                            passengers=journey.passengers,
+                            edit=1
+                        ) }}">
+                        <span aria-hidden="true">↶</span>
+                        Edit journey
+                    </a>
+                {% endif %}
+
+                <a class="results-home-button" href="/">
+                    Back home
+                </a>
+
             </div>
+
         </section>
+
+
+        <div class="results-bottom-note">
+            <span class="results-bottom-icon">✦</span>
+            <p>Better journeys start with better planning.</p>
+        </div>
+
     </main>
 
-    <footer class="site-footer">
-        <a class="brand footer-brand" href="/">
+
+    <footer class="journey-footer">
+
+        <a class="brand journey-brand" href="/">
             <span class="brand-icon">S</span>
-            SmartRide
+            <span>smart<span class="brand-highlight">ride.</span></span>
         </a>
+
         <p>Student journeys, made smarter.</p>
+
         <span>SmartRide MSc project · Under development</span>
+
     </footer>
+
 </body>
 </html>

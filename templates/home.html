@@ -4,11 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SmartRide helps students find compatible shared journeys, optimise pickups and estimate travel costs.">
+    <meta name="description" content="SmartRide helps students find compatible shared journeys, optimise pickups and share travel costs.">
+
+    <meta name="theme-color" content="#101A20">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <title>SmartRide | Student Ride Sharing</title>
+    <title>SmartRide | Your campus. Your people. Your ride.</title>
 
     <script
         defer
@@ -30,12 +36,15 @@
         src="{{ url_for('static', filename='js/clerk-auth.js') }}">
     </script>
 </head>
-<body>
-    <header class="site-header">
+
+<body class="home-page">
+
+    <header class="site-header modern-header">
         <nav class="navbar" aria-label="Main navigation">
-            <a class="brand" href="/" aria-label="SmartRide home">
+
+            <a class="brand modern-brand" href="/" aria-label="SmartRide home">
                 <span class="brand-icon">S</span>
-                SmartRide
+                <span>smart<span class="brand-highlight">ride.</span></span>
             </a>
 
             <div class="nav-links">
@@ -44,226 +53,437 @@
             </div>
 
             <div class="auth-controls" id="auth-controls">
-                <span class="auth-status" id="auth-status" role="status">Loading account...</span>
-                <button class="auth-button auth-button-secondary" id="sign-in-button" type="button" hidden>
+                <span class="auth-status" id="auth-status" role="status">
+                    Loading account...
+                </span>
+
+                <button
+                    class="auth-button auth-button-secondary"
+                    id="sign-in-button"
+                    type="button"
+                    hidden>
                     Sign in
                 </button>
-                <button class="auth-button auth-button-primary" id="sign-up-button" type="button" hidden>
-                    Sign up
+
+                <button
+                    class="auth-button auth-button-primary"
+                    id="sign-up-button"
+                    type="button"
+                    hidden>
+                    Get started
                 </button>
+
                 <div id="user-button" hidden></div>
             </div>
+
         </nav>
     </header>
 
-    <main>
-        <section class="hero" id="get-started">
-            <div class="hero-content">
-                <span class="eyebrow">Built for student journeys</span>
+    <main class="modern-main">
 
-                <h1>Good journeys are better <span>shared.</span></h1>
+        <!-- HERO -->
+        <section class="hero modern-hero" id="get-started">
+
+            <div class="hero-content modern-hero-content">
+
+                <div class="hero-eyebrow">
+                    <span class="hero-eyebrow-dot"></span>
+                    BUILT FOR STUDENT JOURNEYS
+                </div>
+
+                <h1>
+                    Your campus.<br>
+                    Your people.<br>
+                    <span>Your ride.</span>
+                </h1>
 
                 <p class="hero-description">
-                    Find students travelling in the same direction, coordinate
-                    smarter pickups and explore estimated shared travel costs.
-                    Less hassle, more connected journeys.
+                    Less solo travel. More shared journeys.
+                    Find students heading your way, coordinate
+                    smarter pickups and make every journey count.
                 </p>
 
                 <div class="hero-actions">
-                    <a class="button button-primary" href="/find-ride">
-                        Find a ride <span aria-hidden="true">→</span>
+                    <a class="button button-primary modern-primary-button" href="/find-ride">
+                        Find your next ride
+                        <span aria-hidden="true">↗</span>
                     </a>
-                    <a class="button button-secondary" href="#features">
-                        Discover features
+
+                    <a class="button button-secondary modern-secondary-button" href="#features">
+                        Explore SmartRide
                     </a>
                 </div>
 
-                <div class="hero-note">
-                    <span class="status-dot" aria-hidden="true"></span>
-                    <span>SmartRide is under development</span>
+                <div class="hero-note modern-hero-note">
+                    <span class="status-dot"></span>
+                    <span>Made for students, built for better journeys.</span>
                 </div>
+
             </div>
 
-            <aside class="journey-card" aria-label="SmartRide journey preview">
-                <div class="journey-card-header">
-                    <div>
-                        <span class="card-label">YOUR NEXT JOURNEY</span>
-                        <h2>Better together</h2>
-                    </div>
-                    <span class="journey-icon" aria-hidden="true">↗</span>
-                </div>
+            <!-- Animated journey illustration -->
+            <div class="hero-visual" aria-label="Illustration of a shared journey">
 
-                <div class="route">
-                    <div class="route-marker">
-                        <span class="route-start"></span>
-                        <span class="route-line"></span>
-                        <span class="route-end"></span>
-                    </div>
+                <div class="visual-glow"></div>
 
-                    <div class="route-stops">
-                        <div class="route-stop">
-                            <span>Starting point</span>
-                            <strong>Your pickup location</strong>
+                <div class="map-card">
+
+                    <div class="map-card-header">
+                        <div>
+                            <span class="map-label">THE SMART WAY TO TRAVEL</span>
+                            <h2>One direction. More possibilities.</h2>
                         </div>
-                        <div class="route-stop destination">
-                            <span>Destination</span>
+                        <span class="map-live-indicator">
+                            <span></span> SMART
+                        </span>
+                    </div>
+
+                    <div class="map-illustration">
+
+                        <div class="map-grid"></div>
+
+                        <svg
+                            class="route-svg"
+                            viewBox="0 0 500 300"
+                            role="img"
+                            aria-label="A route connecting a pickup point to a destination">
+
+                            <path
+                                class="route-shadow"
+                                d="M 65 225 C 120 225, 110 155, 190 165 S 285 230, 320 145 S 405 85, 440 65">
+                            </path>
+
+                            <path
+                                class="route-path"
+                                d="M 65 225 C 120 225, 110 155, 190 165 S 285 230, 320 145 S 405 85, 440 65">
+                            </path>
+
+                            <circle class="route-pulse" cx="65" cy="225" r="15"></circle>
+                            <circle class="route-point-start" cx="65" cy="225" r="7"></circle>
+
+                            <circle class="route-point-end" cx="440" cy="65" r="9"></circle>
+
+                            <circle class="route-moving-dot" r="5">
+                                <animateMotion
+                                    dur="5s"
+                                    repeatCount="indefinite"
+                                    path="M 65 225 C 120 225, 110 155, 190 165 S 285 230, 320 145 S 405 85, 440 65">
+                                </animateMotion>
+                            </circle>
+
+                        </svg>
+
+                        <div class="map-location location-start">
+                            <span>STARTING POINT</span>
+                            <strong>Your location</strong>
+                        </div>
+
+                        <div class="map-location location-end">
+                            <span>DESTINATION</span>
                             <strong>University campus</strong>
                         </div>
-                    </div>
-                </div>
 
-                <div class="journey-divider"></div>
-
-                <div class="journey-summary">
-                    <div>
-                        <span class="summary-icon" aria-hidden="true">⌖</span>
-                        <div>
-                            <strong>Smarter pickups</strong>
-                            <span>Planned around your journey</span>
+                        <div class="floating-route-card">
+                            <span class="floating-route-icon">↗</span>
+                            <div>
+                                <strong>Better together</strong>
+                                <span>Smarter shared journeys</span>
+                            </div>
                         </div>
+
                     </div>
-                    <span class="summary-arrow" aria-hidden="true">→</span>
+
+                    <div class="map-card-footer">
+                        <span>SMARTER ROUTES</span>
+                        <span class="footer-route-dot"></span>
+                        <span>BETTER CONNECTIONS</span>
+                    </div>
+
                 </div>
 
-                <p class="preview-disclaimer">
-                    Illustrative preview — live journey data is not available yet.
-                </p>
-            </aside>
+                <div class="floating-decoration decoration-one"></div>
+                <div class="floating-decoration decoration-two"></div>
+
+            </div>
+
         </section>
 
-        <section class="profile-setup-section" id="profile-setup" hidden>
-            <div class="profile-setup-card">
-                <span class="eyebrow">YOUR SMARTRIDE ACCOUNT</span>
-                <h2>Complete your student profile</h2>
-                <p>
-                    Choose your university to set up your SmartRide profile.
-                    Student eligibility verification will happen separately.
-                </p>
 
-                <form id="profile-form">
-                    <label for="university">Your university</label>
+        <!-- STUDENT PROFILE -->
+        <section class="profile-setup-section modern-profile-section"
+                 id="profile-setup"
+                 hidden>
 
-                    <select id="university" name="university" required>
-                        <option value="">Select your university</option>
-                        <option value="Edinburgh Napier University">
-                            Edinburgh Napier University
-                        </option>
-                        <option value="The University of Edinburgh">
-                            The University of Edinburgh
-                        </option>
-                        <option value="Heriot-Watt University">
-                            Heriot-Watt University
-                        </option>
-                        <option value="Queen Margaret University">
-                            Queen Margaret University
-                        </option>
-                        <option value="Other">Other university</option>
-                    </select>
+            <div class="profile-setup-card modern-profile-card">
 
-                    <div id="other-university-container" hidden>
-                        <label for="other-university">University name</label>
-                        <input
-                            id="other-university"
-                            name="other-university"
-                            type="text"
-                            maxlength="150"
-                            placeholder="Enter your university name"
-                        >
+                <div class="profile-section-heading">
+                    <span class="eyebrow">YOUR SMARTRIDE ACCOUNT</span>
+                    <span class="profile-account-icon">✦</span>
+                </div>
+
+                <!-- New profile form -->
+                <div id="profile-form-container">
+
+                    <h2>Let's get you set up.</h2>
+
+                    <p>
+                        Tell us which university you attend.
+                        We'll use this to start setting up your student profile.
+                    </p>
+
+                    <form id="profile-form">
+
+                        <label for="university">Your university</label>
+
+                        <select id="university" name="university" required>
+                            <option value="">Select your university</option>
+                            <option value="Edinburgh Napier University">
+                                Edinburgh Napier University
+                            </option>
+                            <option value="The University of Edinburgh">
+                                The University of Edinburgh
+                            </option>
+                            <option value="Heriot-Watt University">
+                                Heriot-Watt University
+                            </option>
+                            <option value="Queen Margaret University">
+                                Queen Margaret University
+                            </option>
+                            <option value="Other">Other university</option>
+                        </select>
+
+                        <div id="other-university-container" hidden>
+                            <label for="other-university">University name</label>
+                            <input
+                                id="other-university"
+                                name="other-university"
+                                type="text"
+                                maxlength="150"
+                                placeholder="Enter your university name">
+                        </div>
+
+                        <button
+                            class="button button-primary modern-primary-button"
+                            id="save-profile-button"
+                            type="submit">
+                            Save my profile <span aria-hidden="true">↗</span>
+                        </button>
+
+                        <p
+                            id="profile-message"
+                            class="profile-message"
+                            role="status"
+                            aria-live="polite">
+                        </p>
+
+                    </form>
+
+                </div>
+
+                <!-- Existing saved profile -->
+                <div id="saved-profile-container" hidden>
+
+                    <div class="saved-profile-top">
+                        <div>
+                            <span class="eyebrow">PROFILE CONNECTED</span>
+                            <h2>Welcome back.</h2>
+                        </div>
+                        <span class="saved-profile-check">✓</span>
                     </div>
 
-                    <button class="button button-primary" id="save-profile-button" type="submit">
-                        Save profile
-                    </button>
+                    <p class="saved-profile-intro">
+                        Your SmartRide student profile is saved and ready.
+                    </p>
 
-                    <p id="profile-message" class="profile-message" role="status" aria-live="polite"></p>
-                </form>
+                    <div class="saved-profile-details">
+
+                        <div class="saved-profile-detail">
+                            <span>STUDENT NAME</span>
+                            <strong id="saved-profile-name">Student</strong>
+                        </div>
+
+                        <div class="saved-profile-detail">
+                            <span>UNIVERSITY</span>
+                            <strong id="saved-profile-university">University</strong>
+                        </div>
+
+                        <div class="saved-profile-detail">
+                            <span>EMAIL ADDRESS</span>
+                            <strong id="saved-profile-email">Email</strong>
+                        </div>
+
+                        <div class="saved-profile-detail">
+                            <span>ACCOUNT STATUS</span>
+                            <strong id="saved-profile-account-status">Active</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="verification-status-row">
+                        <div>
+                            <span class="verification-label">STUDENT VERIFICATION</span>
+                            <strong id="saved-profile-verification">Pending</strong>
+                        </div>
+                        <span id="verification-status-badge"
+                              class="verification-badge">
+                            Pending
+                        </span>
+                    </div>
+
+                    <a class="button button-primary modern-primary-button profile-ride-button"
+                       href="/find-ride">
+                        Find a ride <span aria-hidden="true">↗</span>
+                    </a>
+
+                    <p id="saved-profile-message" class="profile-message"></p>
+
+                </div>
+
             </div>
+
         </section>
 
-        <section class="features-section" id="features">
-            <div class="section-heading">
+
+        <!-- FEATURES -->
+        <section class="features-section modern-features-section" id="features">
+
+            <div class="section-heading modern-section-heading">
                 <span class="eyebrow">WHY SMARTRIDE?</span>
-                <h2>Make every journey count.</h2>
+                <h2>More than just a lift.</h2>
                 <p>
-                    Designed to help students share journeys with greater
-                    convenience, clarity and confidence.
+                    We're making student travel smarter, more connected
+                    and more rewarding.
                 </p>
             </div>
 
-            <div class="feature-grid">
-                <article class="feature-card">
-                    <span class="feature-icon blue" aria-hidden="true">◎</span>
-                    <h3>Compatible groups</h3>
+            <div class="feature-grid modern-feature-grid">
+
+                <article class="feature-card modern-feature-card">
+                    <span class="feature-icon modern-feature-icon icon-lime">◎</span>
+                    <span class="feature-number">01 / MATCH</span>
+                    <h3>Compatible journeys</h3>
                     <p>
-                        Find potential travel companions whose journeys and
-                        preferences fit yours.
+                        Find students travelling in the same direction
+                        and explore smarter group journeys.
                     </p>
+                    <span class="feature-card-arrow">↗</span>
                 </article>
 
-                <article class="feature-card">
-                    <span class="feature-icon purple" aria-hidden="true">⌁</span>
+                <article class="feature-card modern-feature-card">
+                    <span class="feature-icon modern-feature-icon icon-purple">⌁</span>
+                    <span class="feature-number">02 / ROUTE</span>
                     <h3>Smarter pickups</h3>
                     <p>
-                        Explore pickup sequences that balance convenience
-                        and additional travel time.
+                        Optimised pickup sequences that balance
+                        convenience and additional travel time.
                     </p>
+                    <span class="feature-card-arrow">↗</span>
                 </article>
 
-                <article class="feature-card">
-                    <span class="feature-icon green" aria-hidden="true">£</span>
-                    <h3>Clear cost estimates</h3>
+                <article class="feature-card modern-feature-card">
+                    <span class="feature-icon modern-feature-icon icon-green">£</span>
+                    <span class="feature-number">03 / SHARE</span>
+                    <h3>Fairer travel costs</h3>
                     <p>
-                        Understand estimated shared journey costs before
-                        deciding whether a match works for you.
+                        Understand estimated shared journey costs
+                        before deciding whether a match works for you.
                     </p>
+                    <span class="feature-card-arrow">↗</span>
                 </article>
+
+                <article class="feature-card modern-feature-card">
+                    <span class="feature-icon modern-feature-icon icon-orange">✦</span>
+                    <span class="feature-number">04 / REWARD</span>
+                    <h3>SmartPoints</h3>
+                    <p>
+                        Make shared travel rewarding with a points
+                        system designed around student journeys.
+                    </p>
+                    <span class="feature-card-arrow">↗</span>
+                </article>
+
             </div>
+
         </section>
 
-        <section class="how-section" id="how-it-works">
-            <div class="section-heading">
+
+        <!-- HOW IT WORKS -->
+        <section class="how-section modern-how-section" id="how-it-works">
+
+            <div class="section-heading modern-section-heading">
                 <span class="eyebrow">SIMPLE BY DESIGN</span>
                 <h2>Your journey, in three steps.</h2>
             </div>
 
-            <div class="steps-grid">
-                <article class="step">
+            <div class="steps-grid modern-steps-grid">
+
+                <article class="step modern-step">
                     <span class="step-number">01</span>
+                    <div class="step-line"></div>
                     <h3>Share your journey</h3>
-                    <p>Choose your starting point, destination and travel preferences.</p>
+                    <p>
+                        Choose your starting point, destination
+                        and travel preferences.
+                    </p>
                 </article>
 
-                <article class="step">
+                <article class="step modern-step">
                     <span class="step-number">02</span>
+                    <div class="step-line"></div>
                     <h3>Explore your matches</h3>
-                    <p>Review potential groups, pickup plans and estimated costs.</p>
+                    <p>
+                        Review potential groups, pickup plans
+                        and estimated costs.
+                    </p>
                 </article>
 
-                <article class="step">
+                <article class="step modern-step">
                     <span class="step-number">03</span>
+                    <div class="step-line"></div>
                     <h3>Choose what works</h3>
-                    <p>Compare the options and choose a journey that suits your needs.</p>
+                    <p>
+                        Compare your options and choose a
+                        journey that suits your needs.
+                    </p>
                 </article>
+
             </div>
+
         </section>
 
-        <section class="closing-cta">
+
+        <!-- FINAL CTA -->
+        <section class="closing-cta modern-closing-cta">
+
             <div>
                 <span class="eyebrow">THE JOURNEY STARTS HERE</span>
-                <h2>A smarter way to travel together.</h2>
-                <p>We're building a better way for students to coordinate shared journeys.</p>
+                <h2>Good journeys are better shared.</h2>
+                <p>
+                    Find your people. Share your route.
+                    Make every journey count.
+                </p>
             </div>
-            <a class="button button-light" href="#get-started">Back to top ↑</a>
+
+            <a class="button button-light modern-cta-button" href="/find-ride">
+                Find your next ride ↗
+            </a>
+
         </section>
+
     </main>
 
-    <footer class="site-footer">
-        <a class="brand footer-brand" href="/">
+
+    <footer class="site-footer modern-footer">
+
+        <a class="brand modern-brand" href="/">
             <span class="brand-icon">S</span>
-            SmartRide
+            <span>smart<span class="brand-highlight">ride.</span></span>
         </a>
+
         <p>Student journeys, made smarter.</p>
         <span>SmartRide MSc project · Under development</span>
+
     </footer>
+
 </body>
 </html>

@@ -171,3 +171,96 @@ def test_create_profile_handles_database_failure():
     assert response.get_json()["error"] == (
         "Unable to save your profile right now."
     )
+
+
+# GET /api/profile tests
+
+
+def test_get_profile_rejects_unauthenticated_request():
+    client = app_module.app.test_client()
+
+    with (
+        patch(
+            "app.get_authenticated_clerk_user_id",
+            return_value=None,
+        ),
+        patch("app.get_user_by_clerk_id") as mock_get,
+    ):
+        response = client.get("/api/profile")
+
+    assert response.status_code == 401
+    assert response.get_json()["error"] == "Sign-in required."
+    mock_get.assert_not_called()
+
+
+def test_get_profile_returns_saved_profile():
+    client = app_module.app.test_client()
+
+    database_user = {
+        "id": 42,
+        "clerk_user_id": "user_test123",
+        "display_name": "Test Student",
+        "email": "student@example.com",
+        "university": "Edinburgh Napier University",
+        "verification_status": "pending",
+        "account_status": "active",
+    }
+
+    with (
+        patch(
+            "app.get_authenticated_clerk_user_id",
+            return_value="user_test123",
+        ),
+        patch(
+            "app.get_user_by_clerk_id",
+            return_value=database_user,
+        ) as mock_get,
+    ):
+        response = client.get("/api/profile")
+
+    assert response.status_code == 200
+    assert response.get_json()["profile"] == database_user
+
+    mock_get.assert_called_once_with("user_test123")
+
+
+def test_get_profile_returns_404_when_profile_does_not_exist():
+    client = app_module.app.test_client()
+
+    with (
+        patch(
+            "app.get_authenticated_clerk_user_id",
+            return_value="user_test123",
+        ),
+        patch(
+            "app.get_user_by_clerk_id",
+            return_value=None,
+        ),
+    ):
+        response = client.get("/api/profile")
+
+    assert response.status_code == 404
+    assert response.get_json()["error"] == (
+        "Student profile not found."
+    )
+
+
+def test_get_profile_handles_database_failure():
+    client = app_module.app.test_client()
+
+    with (
+        patch(
+            "app.get_authenticated_clerk_user_id",
+            return_value="user_test123",
+        ),
+        patch(
+            "app.get_user_by_clerk_id",
+            side_effect=RuntimeError("Database unavailable"),
+        ),
+    ):
+        response = client.get("/api/profile")
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == (
+        "Unable to retrieve your profile right now."
+    )

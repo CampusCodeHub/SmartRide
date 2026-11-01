@@ -1,4 +1,5 @@
 
+import math
 import os
 
 import pymysql
@@ -114,24 +115,56 @@ def create_ride_request(
     passenger_id,
     origin,
     destination,
+    origin_latitude,
+    origin_longitude,
+    destination_latitude,
+    destination_longitude,
     travel_date,
     departure_time,
     passenger_count,
     max_detour_minutes,
 ):
-    """Save a ride request and return its generated database ID."""
+    """Save a geographically complete ride request and return its ID."""
+
+    coordinates = {
+        "origin_latitude": (origin_latitude, -90, 90),
+        "origin_longitude": (origin_longitude, -180, 180),
+        "destination_latitude": (destination_latitude, -90, 90),
+        "destination_longitude": (destination_longitude, -180, 180),
+    }
+
+    validated_coordinates = {}
+
+    for name, (value, minimum, maximum) in coordinates.items():
+        try:
+            coordinate = float(value)
+        except (TypeError, ValueError):
+            raise ValueError(f"Invalid {name.replace('_', ' ')}.")
+
+        if (
+            not math.isfinite(coordinate)
+            or not minimum <= coordinate <= maximum
+        ):
+            raise ValueError(f"Invalid {name.replace('_', ' ')}.")
+
+        validated_coordinates[name] = coordinate
+
     query = """
         INSERT INTO ride_requests (
             passenger_id,
             origin_address,
+            origin_latitude,
+            origin_longitude,
             destination_address,
+            destination_latitude,
+            destination_longitude,
             travel_date,
             departure_time,
             passenger_count,
             max_detour_minutes,
             status
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, 'open')
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'open')
     """
 
     connection = get_db_connection()
@@ -143,13 +176,18 @@ def create_ride_request(
                 (
                     passenger_id,
                     origin,
+                    validated_coordinates["origin_latitude"],
+                    validated_coordinates["origin_longitude"],
                     destination,
+                    validated_coordinates["destination_latitude"],
+                    validated_coordinates["destination_longitude"],
                     travel_date,
                     departure_time,
                     passenger_count,
                     max_detour_minutes,
                 ),
             )
+
             request_id = cursor.lastrowid
 
         connection.commit()
@@ -158,6 +196,40 @@ def create_ride_request(
     except Exception:
         connection.rollback()
         raise
+
+    finally:
+        connection.close()
+
+
+def get_user_by_clerk_id(clerk_user_id):
+    """Retrieve an existing SmartRide user using their Clerk ID."""
+    if not clerk_user_id or not clerk_user_id.startswith("user_"):
+        raise ValueError("A valid Clerk user ID is required.")
+
+    query = """
+        SELECT
+            id,
+            clerk_user_id,
+            display_name,
+            email,
+            university,
+            verification_status,
+            account_status,
+            created_at,
+            updated_at
+        FROM users
+        WHERE clerk_user_id = %s
+        LIMIT 1
+    """
+
+    connection = get_db_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (clerk_user_id,))
+            user = cursor.fetchone()
+
+        return user
 
     finally:
         connection.close()

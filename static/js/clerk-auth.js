@@ -8,6 +8,13 @@
     const userButtonContainer = document.getElementById("user-button");
 
     const profileSection = document.getElementById("profile-setup");
+    const profileFormContainer = document.getElementById(
+        "profile-form-container"
+    );
+    const savedProfileContainer = document.getElementById(
+        "saved-profile-container"
+    );
+
     const profileForm = document.getElementById("profile-form");
     const universitySelect = document.getElementById("university");
     const otherUniversityContainer = document.getElementById(
@@ -68,29 +75,22 @@
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            throw new Error(
+            const error = new Error(
                 result.error || `Request failed (${response.status}).`
             );
+
+            error.status = response.status;
+            throw error;
         }
-
-        return result;
-    }
-
-    async function checkExistingProfile() {
-        const result = await sendApiRequest("/api/me");
-
-        if (!result.authenticated) {
-            throw new Error("The server could not verify your account.");
-        }
-
-        profileSection.hidden = false;
-        profileMessage.textContent =
-            "Choose your university to complete your profile.";
 
         return result;
     }
 
     function setProfileMessage(message, type = "") {
+        if (!profileMessage) {
+            return;
+        }
+
         profileMessage.textContent = message;
         profileMessage.className = "profile-message";
 
@@ -99,16 +99,106 @@
         }
     }
 
+    function showProfileSetup() {
+        profileSection.hidden = false;
+        profileFormContainer.hidden = false;
+        savedProfileContainer.hidden = true;
+
+        setProfileMessage(
+            "Choose your university to complete your profile."
+        );
+    }
+
+    function showSavedProfile(profile) {
+        profileSection.hidden = false;
+        profileFormContainer.hidden = true;
+        savedProfileContainer.hidden = false;
+
+        document.getElementById("saved-profile-name").textContent =
+            profile.display_name || "Student";
+
+        document.getElementById("saved-profile-university").textContent =
+            profile.university || "Not provided";
+
+        document.getElementById("saved-profile-email").textContent =
+            profile.email || "Not provided";
+
+        document.getElementById("saved-profile-account-status").textContent =
+            formatStatus(profile.account_status);
+
+        const verificationStatus = formatStatus(
+            profile.verification_status
+        );
+
+        document.getElementById("saved-profile-verification").textContent =
+            verificationStatus;
+
+        const badge = document.getElementById(
+            "verification-status-badge"
+        );
+
+        badge.textContent = verificationStatus;
+        badge.className = `verification-badge verification-${String(
+            profile.verification_status || "pending"
+        ).toLowerCase()}`;
+
+        const message = document.getElementById(
+            "saved-profile-message"
+        );
+
+        if (profile.verification_status === "pending") {
+            message.textContent =
+                "Your student verification is pending. We'll update this when your eligibility has been checked.";
+        } else if (profile.verification_status === "verified") {
+            message.textContent =
+                "Your student profile has been verified.";
+        } else {
+            message.textContent =
+                "Your current student verification status is shown above.";
+        }
+    }
+
+    function formatStatus(value) {
+        if (!value) {
+            return "Unknown";
+        }
+
+        return String(value)
+            .replaceAll("_", " ")
+            .replace(/\b\w/g, character => character.toUpperCase());
+    }
+
+    async function checkExistingProfile() {
+        profileSection.hidden = false;
+
+        try {
+            const result = await sendApiRequest("/api/profile");
+
+            showSavedProfile(result.profile);
+        } catch (error) {
+            if (error.status === 404) {
+                showProfileSetup();
+                return;
+            }
+
+            throw error;
+        }
+    }
+
     async function handleProfileSubmit(event) {
         event.preventDefault();
 
         const selectedUniversity = universitySelect.value;
+
         const university = selectedUniversity === "Other"
             ? otherUniversityInput.value.trim()
             : selectedUniversity;
 
         if (!university) {
-            setProfileMessage("Please select or enter your university.", "error");
+            setProfileMessage(
+                "Please select or enter your university.",
+                "error"
+            );
             return;
         }
 
@@ -133,22 +223,20 @@
                 body: JSON.stringify({ university }),
             });
 
-            const profile = result.profile;
+            showSavedProfile(result.profile);
 
-            universitySelect.value = profile.university;
-            otherUniversityInput.value = "";
-            otherUniversityContainer.hidden = true;
-
-            setProfileMessage(
-                `Profile saved! Student verification status: ${profile.verification_status}.`,
-                "success"
-            );
         } catch (error) {
             console.error("Profile save failed:", error);
-            setProfileMessage(error.message || "Unable to save your profile.", "error");
+
+            setProfileMessage(
+                error.message || "Unable to save your profile.",
+                "error"
+            );
+
         } finally {
             saveProfileButton.disabled = false;
-            saveProfileButton.textContent = "Save profile";
+            saveProfileButton.innerHTML =
+                'Save my profile <span aria-hidden="true">↗</span>';
         }
     }
 
@@ -185,25 +273,33 @@
                 }
             });
 
-            profileForm?.addEventListener("submit", handleProfileSubmit);
+            profileForm?.addEventListener(
+                "submit",
+                handleProfileSubmit
+            );
 
             if (window.Clerk.isSignedIn && window.Clerk.user) {
                 showSignedIn(window.Clerk.user);
+
                 window.Clerk.mountUserButton(userButtonContainer);
 
                 try {
                     await checkExistingProfile();
                 } catch (error) {
                     statusElement.textContent =
-                        "Signed in; profile setup needs attention";
-                    console.error("Profile initialisation failed:", error);
+                        "Signed in; profile needs attention";
 
-                    if (profileSection) {
-                        profileSection.hidden = false;
-                    }
+                    console.error(
+                        "Profile initialisation failed:",
+                        error
+                    );
+
+                    profileSection.hidden = false;
+                    profileFormContainer.hidden = true;
+                    savedProfileContainer.hidden = true;
 
                     setProfileMessage(
-                        "We couldn't verify your profile. Please refresh and try again.",
+                        "We couldn't retrieve your profile. Please refresh and try again.",
                         "error"
                     );
                 }
@@ -212,9 +308,14 @@
             }
 
             showSignedOut();
+
         } catch (error) {
             statusElement.textContent = "Account service unavailable";
-            console.error("Clerk initialisation failed:", error);
+
+            console.error(
+                "Clerk initialisation failed:",
+                error
+            );
         }
     }
 
