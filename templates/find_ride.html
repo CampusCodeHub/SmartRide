@@ -14,6 +14,21 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <title>Find a Ride | SmartRide</title>
+
+
+<script
+    defer
+    crossorigin="anonymous"
+    data-clerk-publishable-key="{{ clerk_publishable_key }}"
+    src="https://joint-monarch-1365.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js">
+</script>
+
+<script
+    defer
+    src="{{ url_for('static', filename='js/journey-auth.js') }}">
+</script>
+
+
 </head>
 
 <body class="journey-page">

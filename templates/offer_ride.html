@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Share your journey with other students through SmartRide.">
+    <meta name="theme-color" content="#101a20">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <title>Offer a Ride | SmartRide</title>
+</head>
+
+<body class="journey-page">
+
+    <header class="site-header journey-header">
+        <nav class="navbar" aria-label="Main navigation">
+
+            <a class="brand journey-brand" href="/" aria-label="SmartRide home">
+                <span class="brand-icon">S</span>
+                <span>smart<span class="brand-highlight">ride.</span></span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/#features">Features</a>
+                <a href="/#how-it-works">How it works</a>
+                <a href="{{ url_for('find_ride') }}">Find a ride</a>
+            </div>
+
+            <a class="nav-button journey-home-button" href="/">
+                Home <span aria-hidden="true">↗</span>
+            </a>
+
+        </nav>
+    </header>
+
+
+    <main class="journey-main">
+
+        <section class="journey-intro">
+
+            <span class="eyebrow">DRIVER ZONE</span>
+
+            <h1>Your journey.<br><span>Shared smarter.</span></h1>
+
+            <p>
+                Planning to drive somewhere? Publish your journey
+                and let fellow students discover a potential ride.
+            </p>
+
+            <div class="journey-progress" aria-label="Step 1 of 2">
+                <span class="progress-active"></span>
+                <span></span>
+                <small>STEP 1 OF 2</small>
+            </div>
+
+        </section>
+
+
+        <section class="journey-search-layout">
+
+            <form
+                class="journey-form-card"
+                action="{{ url_for('offer_ride') }}"
+                method="POST"
+            >
+
+                <div class="journey-form-heading">
+
+                    <div>
+                        <span class="eyebrow">YOUR DRIVE DETAILS</span>
+                        <h2>Create a ride offer</h2>
+                        <p>Tell students about your planned journey.</p>
+                    </div>
+
+                    <span class="journey-heading-icon" aria-hidden="true">
+                        ↗
+                    </span>
+
+                </div>
+
+
+                {% if error %}
+                    <div class="journey-error" role="alert">
+                        <span aria-hidden="true">!</span>
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+
+
+                <div class="journey-fields">
+
+                    <div class="journey-field full-width">
+
+                        <label for="origin">
+                            <span class="field-icon" aria-hidden="true">⌖</span>
+                            Starting location
+                        </label>
+
+                        <input
+                            type="text"
+                            id="origin"
+                            name="origin"
+                            placeholder="e.g. Edinburgh Waverley"
+                            autocomplete="street-address"
+                            maxlength="200"
+                            required
+                            value="{{ form_data.get('origin', '') if form_data else '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="journey-field full-width">
+
+                        <label for="destination">
+                            <span class="field-icon" aria-hidden="true">◎</span>
+                            Destination
+                        </label>
+
+                        <input
+                            type="text"
+                            id="destination"
+                            name="destination"
+                            placeholder="e.g. Edinburgh Napier University"
+                            maxlength="200"
+                            required
+                            value="{{ form_data.get('destination', '') if form_data else '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="journey-field">
+
+                        <label for="travel_date">
+                            <span class="field-icon" aria-hidden="true">▦</span>
+                            Travel date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="travel_date"
+                            name="travel_date"
+                            min="{{ today }}"
+                            required
+                            value="{{ form_data.get('travel_date', '') if form_data else '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="journey-field">
+
+                        <label for="departure_time">
+                            <span class="field-icon" aria-hidden="true">◷</span>
+                            Departure time
+                        </label>
+
+                        <input
+                            type="time"
+                            id="departure_time"
+                            name="departure_time"
+                            required
+                            value="{{ form_data.get('departure_time', '') if form_data else '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="journey-field">
+
+                        <label for="available_seats">
+                            <span class="field-icon" aria-hidden="true">♧</span>
+                            Available passenger seats
+                        </label>
+
+                        {% set selected_seats = form_data.get('available_seats', '2') if form_data else '2' %}
+
+                        <select id="available_seats" name="available_seats" required>
+
+                            <option value="1" {% if selected_seats == '1' %}selected{% endif %}>
+                                1 seat
+                            </option>
+
+                            <option value="2" {% if selected_seats == '2' %}selected{% endif %}>
+                                2 seats
+                            </option>
+
+                            <option value="3" {% if selected_seats == '3' %}selected{% endif %}>
+                                3 seats
+                            </option>
+
+                            <option value="4" {% if selected_seats == '4' %}selected{% endif %}>
+                                4 seats
+                            </option>
+
+                            <option value="5" {% if selected_seats == '5' %}selected{% endif %}>
+                                5 seats
+                            </option>
+
+                        </select>
+
+                        <span class="journey-field-hint">
+                            Number of passenger seats available, excluding the driver.
+                        </span>
+
+                    </div>
+
+
+                    <div class="journey-field">
+
+                        <label for="max_detour">
+                            <span class="field-icon" aria-hidden="true">⌁</span>
+                            Maximum extra travel time
+                        </label>
+
+                        {% set selected_detour = form_data.get('max_detour', '10') if form_data else '10' %}
+
+                        <select id="max_detour" name="max_detour" required>
+
+                            <option value="5" {% if selected_detour == '5' %}selected{% endif %}>
+                                Up to 5 minutes
+                            </option>
+
+                            <option value="10" {% if selected_detour == '10' %}selected{% endif %}>
+                                Up to 10 minutes
+                            </option>
+
+                            <option value="15" {% if selected_detour == '15' %}selected{% endif %}>
+                                Up to 15 minutes
+                            </option>
+
+                            <option value="20" {% if selected_detour == '20' %}selected{% endif %}>
+                                Up to 20 minutes
+                            </option>
+
+                            <option value="30" {% if selected_detour == '30' %}selected{% endif %}>
+                                Up to 30 minutes
+                            </option>
+
+                        </select>
+
+                        <span class="journey-field-hint">
+                            How much additional travel time you are willing to accept.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="journey-prototype-note">
+                    <span aria-hidden="true">ⓘ</span>
+                    <p>
+                        Your ride offer will be saved to SmartRide.
+                        Make sure your journey details and available seats are accurate.
+                    </p>
+                </div>
+
+
+                <button class="journey-submit-button" type="submit">
+                    Publish ride offer
+                    <span aria-hidden="true">↗</span>
+                </button>
+
+            </form>
+
+
+            <aside class="journey-side-card">
+
+                <div class="journey-side-top">
+                    <span class="journey-side-icon" aria-hidden="true">✳</span>
+                    <span class="eyebrow">DRIVE SMARTER TOGETHER</span>
+                </div>
+
+                <h2>You're driving. Make the journey count.</h2>
+
+                <p class="journey-side-description">
+                    Share your planned route with fellow students
+                    travelling in the same direction.
+                </p>
+
+
+                <div class="journey-benefit">
+
+                    <span class="benefit-check">✓</span>
+
+                    <div>
+                        <strong>Share available seats</strong>
+                        <p>Tell students how many passengers you can accommodate.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="journey-benefit">
+
+                    <span class="benefit-check">✓</span>
+
+                    <div>
+                        <strong>Stay in control</strong>
+                        <p>Set the additional travel time you are comfortable with.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="journey-benefit">
+
+                    <span class="benefit-check">✓</span>
+
+                    <div>
+                        <strong>Reach fellow students</strong>
+                        <p>Make your planned journey discoverable to potential passengers.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="journey-side-footer">
+                    <span class="side-footer-dot"></span>
+                    BUILT AROUND STUDENT DRIVERS
+                </div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+
+    <footer class="journey-footer">
+
+        <a class="brand journey-brand" href="/">
+            <span class="brand-icon">S</span>
+            <span>smart<span class="brand-highlight">ride.</span></span>
+        </a>
+
+        <p>Student journeys, made smarter.</p>
+
+        <span>SmartRide MSc project · Under development</span>
+
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your SmartRide driver offer has been published.">
+    <meta name="theme-color" content="#101a20">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        crossorigin=""
+    >
+
+    <!-- Clerk UI -->
+    <script defer crossorigin="anonymous"
+        src="https://joint-monarch-1365.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js">
+    </script>
+
+    <!-- Clerk authentication -->
+    <script defer crossorigin="anonymous"
+        data-clerk-publishable-key="{{ clerk_publishable_key }}"
+        src="https://joint-monarch-1365.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js">
+    </script>
+
+    <!-- Leaflet JavaScript -->
+    <script defer
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        crossorigin="">
+    </script>
+
+    <!-- Passenger matching and group optimisation -->
+    <script defer src="{{ url_for('static', filename='js/ride-matches.js') }}"></script>
+
+    <title>Ride Offer Published | SmartRide</title>
+
+    <style>
+        .matching-panel {
+            margin-top: 28px;
+            padding: 24px;
+            background: #f3f4ec;
+            border: 1px solid rgba(16, 26, 32, 0.1);
+            border-radius: 18px;
+        }
+
+        .matching-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .matching-heading h2 {
+            margin: 8px 0;
+        }
+
+        .matching-heading p,
+        .matching-note {
+            color: #59666a;
+            line-height: 1.6;
+        }
+
+        .matching-button {
+            border: 0;
+            border-radius: 10px;
+            padding: 14px 20px;
+            background: #b7f36b;
+            color: #101a20;
+            font-weight: 700;
+            cursor: pointer;
+            font: inherit;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .matching-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .matching-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .matching-status {
+            margin: 18px 0;
+            color: #24343b;
+            line-height: 1.6;
+        }
+
+        .matching-status:empty {
+            display: none;
+        }
+
+        .matching-status.error {
+            color: #a42d2d;
+        }
+
+        .matching-status.success {
+            color: #28633c;
+        }
+
+        .match-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .match-card {
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(16, 26, 32, 0.1);
+            border-radius: 14px;
+        }
+
+        .match-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .match-card h3 {
+            margin: 0;
+            color: #101a20;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .match-status {
+            padding: 6px 10px;
+            border-radius: 30px;
+            background: #edf5df;
+            color: #365c20;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .match-details {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .match-detail {
+            padding: 12px;
+            background: #f3f4ec;
+            border-radius: 10px;
+        }
+
+        .match-detail span {
+            display: block;
+            margin-bottom: 6px;
+            color: #687579;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .match-detail strong {
+            color: #101a20;
+            font-size: 1rem;
+        }
+
+        .match-explanation {
+            margin: 16px 0 0;
+            color: #59666a;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .matching-disclaimer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(16, 26, 32, 0.12);
+            color: #59666a;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        /* Optimised passenger group */
+
+        .group-panel {
+            margin-top: 24px;
+            padding: 22px;
+            background: #ffffff;
+            border: 2px solid #b7f36b;
+            border-radius: 16px;
+        }
+
+        .group-panel[hidden] {
+            display: none;
+        }
+
+        .group-panel h3 {
+            margin: 8px 0;
+            color: #101a20;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .group-description {
+            color: #59666a;
+            line-height: 1.6;
+        }
+
+        .group-details {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .group-passengers {
+            margin-top: 18px;
+        }
+
+        .group-passengers h4 {
+            margin-bottom: 10px;
+            color: #101a20;
+        }
+
+        .group-passenger {
+            padding: 12px;
+            margin-top: 8px;
+            background: #f3f4ec;
+            border-radius: 10px;
+            color: #24343b;
+        }
+
+        .group-passenger p {
+            margin: 6px 0 0;
+            line-height: 1.5;
+        }
+
+        .group-message {
+            margin-top: 14px;
+            color: #59666a;
+            line-height: 1.5;
+        }
+
+        /* Journey map */
+
+        .journey-map-panel {
+            margin-top: 28px;
+            padding: 22px;
+            background: #ffffff;
+            border: 1px solid rgba(16, 26, 32, 0.1);
+            border-radius: 18px;
+        }
+
+        .journey-map-heading {
+            margin-bottom: 16px;
+        }
+
+        .journey-map-heading h2 {
+            margin: 8px 0;
+            color: #101a20;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .journey-map-heading p {
+            margin: 0;
+            color: #59666a;
+            line-height: 1.6;
+        }
+
+        #journey-map {
+            width: 100%;
+            height: 360px;
+            min-height: 280px;
+            border-radius: 13px;
+            background: #e8ece7;
+            z-index: 1;
+        }
+
+        .route-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 16px;
+            padding: 16px;
+            background: #f3f4ec;
+            border-radius: 12px;
+        }
+
+        .route-summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .route-summary-item span {
+            color: #687579;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .route-summary-item strong {
+            color: #101a20;
+            font-size: 1.15rem;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .route-summary.error {
+            color: #a42d2d;
+        }
+
+        .map-note {
+            margin: 12px 0 0;
+            color: #687579;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .map-error {
+            display: none;
+            margin: 12px 0 0;
+            color: #a42d2d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .match-details,
+            .group-details {
+                grid-template-columns: 1fr;
+            }
+
+            .matching-panel,
+            .journey-map-panel,
+            .group-panel {
+                padding: 18px;
+            }
+
+            .matching-button {
+                width: 100%;
+            }
+
+            #journey-map {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body class="journey-page">
+
+    <header class="site-header journey-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a class="brand journey-brand" href="/">
+                <span class="brand-icon">S</span>
+                <span>smart<span class="brand-highlight">ride.</span></span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/#features">Features</a>
+                <a href="/#how-it-works">How it works</a>
+                <a href="{{ url_for('find_ride') }}">Find a ride</a>
+            </div>
+
+            <a class="nav-button journey-home-button" href="/">
+                Home <span aria-hidden="true">↗</span>
+            </a>
+        </nav>
+    </header>
+
+    <main class="journey-main">
+
+        <section class="journey-intro">
+            <span class="eyebrow">DRIVER ZONE · CONFIRMATION</span>
+            <h1>Your offer is <span>published.</span></h1>
+            <p>
+                Your planned journey has been saved successfully.
+                Thanks for sharing your journey with SmartRide.
+            </p>
+        </section>
+
+        <section class="journey-search-layout">
+
+            <div class="journey-form-card">
+
+                <div class="journey-form-heading">
+                    <div>
+                        <span class="eyebrow">SUCCESSFULLY SAVED</span>
+                        <h2>Ride offer confirmed!</h2>
+                        <p>Your journey is now recorded in SmartRide.</p>
+                    </div>
+
+                    <span class="journey-heading-icon" aria-hidden="true">✓</span>
+                </div>
+
+                <div class="journey-prototype-note">
+                    <span aria-hidden="true">✓</span>
+                    <p>
+                        Ride offer #{{ offer.offer_id }} saved successfully.
+                        Your offer currently has an open status.
+                    </p>
+                </div>
+
+                <div class="journey-fields">
+
+                    <div class="journey-field full-width">
+                        <label>Starting location</label>
+                        <strong>{{ offer.origin_display_name }}</strong>
+                    </div>
+
+                    <div class="journey-field full-width">
+                        <label>Destination</label>
+                        <strong>{{ offer.destination_display_name }}</strong>
+                    </div>
+
+                    <div class="journey-field">
+                        <label>Travel date</label>
+                        <strong>{{ offer.travel_date }}</strong>
+                    </div>
+
+                    <div class="journey-field">
+                        <label>Departure time</label>
+                        <strong>{{ offer.departure_time }}</strong>
+                    </div>
+
+                    <div class="journey-field">
+                        <label>Available seats</label>
+                        <strong>{{ offer.available_seats }}</strong>
+                    </div>
+
+                    <div class="journey-field">
+                        <label>Maximum extra travel time</label>
+                        <strong>{{ offer.max_detour }} minutes</strong>
+                    </div>
+
+                </div>
+
+                <!-- Journey map -->
+
+                <section
+                    class="journey-map-panel"
+                    id="journey-map-panel"
+                    data-origin-lat="{{ offer.origin_latitude }}"
+                    data-origin-lng="{{ offer.origin_longitude }}"
+                    data-destination-lat="{{ offer.destination_latitude }}"
+                    data-destination-lng="{{ offer.destination_longitude }}"
+                    aria-labelledby="journey-map-title">
+
+                    <div class="journey-map-heading">
+                        <span class="eyebrow">YOUR JOURNEY</span>
+                        <h2 id="journey-map-title">Journey map</h2>
+                        <p>View your driving route and journey information.</p>
+                    </div>
+
+                    <div
+                        id="journey-map"
+                        role="region"
+                        aria-label="Map showing the driver's starting point, destination and road route">
+                    </div>
+
+                    <div class="route-summary" id="journey-route-summary" aria-live="polite">
+                        <span>Calculating your driving route...</span>
+                    </div>
+
+                    <p class="map-note">
+                        Route calculated using OpenStreetMap routing data.
+                        Distance and duration are estimates.
+                    </p>
+
+                    <p class="map-error" id="journey-map-error" role="status">
+                        The map could not be loaded. Please refresh the page and try again.
+                    </p>
+
+                </section>
+
+                <!-- Driver matching dashboard -->
+
+                <section
+                    class="matching-panel"
+                    id="matching-dashboard"
+                    data-matches-url="{{ url_for('get_ride_offer_matches', offer_id=offer.offer_id) }}"
+                    aria-labelledby="matching-title">
+
+                    <div class="matching-heading">
+                        <div>
+                            <span class="eyebrow">SMART MATCHING</span>
+                            <h2 id="matching-title">Find potential passengers</h2>
+                            <p>
+                                Discover open student ride requests that may
+                                fit your journey.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="matching-button"
+                        id="find-matches-button">
+                        Find Potential Passengers →
+                    </button>
+
+                    <p
+                        class="matching-status"
+                        id="matching-status"
+                        role="status"
+                        aria-live="polite">
+                    </p>
+
+                    <!-- Optimised passenger group -->
+
+                    <section
+                        class="group-panel"
+                        id="optimised-group-panel"
+                        hidden
+                        aria-labelledby="optimised-group-title">
+
+                        <span class="eyebrow">SMART GROUP OPTIMISATION</span>
+
+                        <h3 id="optimised-group-title">
+                            Your recommended passenger group
+                        </h3>
+
+                        <p
+                            class="group-description"
+                            id="group-description">
+                        </p>
+
+                        <div
+                            class="group-details"
+                            id="group-details">
+                        </div>
+
+                        <div class="group-passengers">
+                            <h4>Passengers selected for this group</h4>
+                            <div id="group-passenger-list"></div>
+                        </div>
+
+                        <p
+                            class="group-message"
+                            id="group-message"
+                            role="status">
+                        </p>
+
+                    </section>
+
+                    <!-- Individual passenger matches -->
+
+                    <div
+                        class="match-list"
+                        id="match-list"
+                        aria-live="polite">
+                    </div>
+
+                    <p class="matching-disclaimer">
+                        Potential matches are screened using journey dates,
+                        passenger capacity, departure times and approximate
+                        route positions. Road-route verification checks
+                        individual passenger detours. The group optimisation
+                        engine then evaluates feasible combinations against
+                        available seats and passenger detour limits.
+                        A recommended group is not a confirmed booking.
+                    </p>
+
+                </section>
+
+                <a class="journey-submit-button" href="{{ url_for('offer_ride') }}">
+                    Create another offer
+                    <span aria-hidden="true">↗</span>
+                </a>
+
+                <p>
+                    <a href="{{ url_for('find_ride') }}">Looking for a ride instead?</a>
+                </p>
+
+            </div>
+
+            <aside class="journey-side-card">
+
+                <div class="journey-side-top">
+                    <span class="journey-side-icon" aria-hidden="true">✳</span>
+                    <span class="eyebrow">THANK YOU</span>
+                </div>
+
+                <h2>Every shared journey makes a difference.</h2>
+
+                <p class="journey-side-description">
+                    SmartRide aims to make student travel more
+                    accessible, affordable and efficient.
+                </p>
+
+                <div class="journey-benefit">
+                    <span class="benefit-check">✓</span>
+                    <div>
+                        <strong>Your offer is recorded</strong>
+                        <p>Your journey details are stored in our database.</p>
+                    </div>
+                </div>
+
+                <div class="journey-benefit">
+                    <span class="benefit-check">✓</span>
+                    <div>
+                        <strong>Explore potential matches</strong>
+                        <p>Review requests that may be compatible with your journey.</p>
+                    </div>
+                </div>
+
+                <div class="journey-side-footer">
+                    <span class="side-footer-dot"></span>
+                    SMARTER JOURNEYS START TOGETHER
+                </div>
+
+            </aside>
+
+        </section>
+    </main>
+
+    <footer class="journey-footer">
+        <a class="brand journey-brand" href="/">
+            <span class="brand-icon">S</span>
+            <span>smart<span class="brand-highlight">ride.</span></span>
+        </a>
+
+        <p>Student journeys, made smarter.</p>
+        <span>SmartRide MSc project · Under development</span>
+    </footer>
+
+    <!-- OSRM road routing and Leaflet map initialisation -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            const panel = document.getElementById("journey-map-panel");
+            const mapElement = document.getElementById("journey-map");
+            const errorElement = document.getElementById("journey-map-error");
+            const summaryElement = document.getElementById("journey-route-summary");
+
+            if (!panel || !mapElement) {
+                return;
+            }
+
+            // Read coordinates supplied by Flask
+            const origin = [
+                Number(panel.dataset.originLat),
+                Number(panel.dataset.originLng)
+            ];
+
+            const destination = [
+                Number(panel.dataset.destinationLat),
+                Number(panel.dataset.destinationLng)
+            ];
+
+            // Validate latitude and longitude
+            function validCoordinates(point) {
+                return (
+                    Number.isFinite(point[0]) &&
+                    Number.isFinite(point[1]) &&
+                    point[0] >= -90 &&
+                    point[0] <= 90 &&
+                    point[1] >= -180 &&
+                    point[1] <= 180
+                );
+            }
+
+            if (!validCoordinates(origin) || !validCoordinates(destination)) {
+                errorElement.style.display = "block";
+                summaryElement.textContent = "Invalid journey coordinates.";
+                summaryElement.classList.add("error");
+
+                console.error("SmartRide: Invalid journey coordinates.");
+                return;
+            }
+
+            if (typeof L === "undefined") {
+                errorElement.style.display = "block";
+                summaryElement.textContent = "The map library could not be loaded.";
+                summaryElement.classList.add("error");
+
+                console.error("SmartRide: Leaflet failed to load.");
+                return;
+            }
+
+            let map;
+
+            try {
+
+                // Initialise Leaflet map
+                map = L.map(mapElement, {
+                    scrollWheelZoom: false
+                });
+
+                window.smartRideMap = map;
+
+                // OpenStreetMap tiles
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    {
+                        maxZoom: 19,
+                        attribution:
+                            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }
+                ).addTo(map);
+
+                // Starting location marker
+                L.marker(origin)
+                    .addTo(map)
+                    .bindPopup(
+                        "<strong>Starting point</strong><br>{{ offer.origin_display_name | e }}"
+                    );
+
+                // Destination marker
+                L.marker(destination)
+                    .addTo(map)
+                    .bindPopup(
+                        "<strong>Destination</strong><br>{{ offer.destination_display_name | e }}"
+                    );
+
+                // Initial zoom while route is loading
+                const initialBounds = L.latLngBounds([origin, destination]);
+
+                if (initialBounds.getNorthEast().equals(initialBounds.getSouthWest())) {
+                    map.setView(origin, 14);
+                } else {
+                    map.fitBounds(initialBounds, {
+                        padding: [40, 40],
+                        maxZoom: 14
+                    });
+                }
+
+                setTimeout(function () {
+                    map.invalidateSize();
+                }, 100);
+
+                // OSRM requires longitude,latitude order
+                const coordinates =
+                    `${origin[1]},${origin[0]};${destination[1]},${destination[0]}`;
+
+                const routeUrl =
+                    `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=false`;
+
+                // Request driving route
+                const response = await fetch(routeUrl);
+
+                if (!response.ok) {
+                    throw new Error(`OSRM request failed: ${response.status}`);
+                }
+
+                const routeData = await response.json();
+
+                if (
+                    routeData.code !== "Ok" ||
+                    !routeData.routes ||
+                    routeData.routes.length === 0
+                ) {
+                    throw new Error("No driving route was found.");
+                }
+
+                const route = routeData.routes[0];
+
+                // GeoJSON uses longitude,latitude.
+                // Leaflet uses latitude,longitude.
+                const routeCoordinates = route.geometry.coordinates.map(
+                    function (coordinate) {
+                        return [
+                            coordinate[1],
+                            coordinate[0]
+                        ];
+                    }
+                );
+
+                // Draw actual road route
+                const roadRoute = L.polyline(
+                    routeCoordinates,
+                    {
+                        color: "#79ad39",
+                        weight: 6,
+                        opacity: 0.9,
+                        lineJoin: "round"
+                    }
+                ).addTo(map);
+
+                // Zoom to show the complete driving route
+                map.fitBounds(roadRoute.getBounds(), {
+                    padding: [40, 40],
+                    maxZoom: 15
+                });
+
+                // Calculate distance
+                const distanceKm = route.distance / 1000;
+
+                // Calculate duration
+                const durationMinutes = Math.round(route.duration / 60);
+
+                const hours = Math.floor(durationMinutes / 60);
+                const minutes = durationMinutes % 60;
+
+                let durationText;
+
+                if (hours > 0) {
+                    durationText = `${hours} hr ${minutes} min`;
+                } else {
+                    durationText = `${minutes} min`;
+                }
+
+                // Display route summary
+                summaryElement.classList.remove("error");
+
+                summaryElement.innerHTML = `
+                    <div class="route-summary-item">
+                        <span>Driving distance</span>
+                        <strong>${distanceKm.toFixed(1)} km</strong>
+                    </div>
+
+                    <div class="route-summary-item">
+                        <span>Estimated duration</span>
+                        <strong>${durationText}</strong>
+                    </div>
+                `;
+
+                console.log("SmartRide road route loaded successfully.", {
+                    distance_km: distanceKm,
+                    duration_minutes: durationMinutes
+                });
+
+            } catch (error) {
+
+                console.error("SmartRide routing failed:", error);
+
+                summaryElement.classList.add("error");
+                summaryElement.textContent =
+                    "Unable to calculate the driving route right now. Your locations are still displayed.";
+
+                // Preserve the map if OSRM is unavailable
+                if (map) {
+                    map.invalidateSize();
+                }
+            }
+
+        });
+    </script>
+
+</body>
+</html>

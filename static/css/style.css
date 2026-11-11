@@ -3398,3 +3398,37 @@ textarea {
         transition-duration: 0.01ms !important;
     }
 }
+
+
+.route-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 16px;
+    padding: 16px;
+    background: #f3f4ec;
+    border-radius: 12px;
+}
+
+.route-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.route-summary-item span {
+    color: #687579;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.route-summary-item strong {
+    color: #101a20;
+    font-size: 1.15rem;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+.route-summary.error {
+    color: #a42d2d;
+}

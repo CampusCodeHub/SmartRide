@@ -1,5 +1,5 @@
-
 from unittest.mock import MagicMock, patch
+from db import create_ride_offer
 
 import pytest
 
@@ -382,3 +382,111 @@ def test_get_user_by_clerk_id_closes_connection_on_failure(mock_database):
         get_user_by_clerk_id("user_test123")
 
     connection.close.assert_called_once()
+
+
+def test_create_ride_offer_success(mock_database):
+    connection, cursor = mock_database
+
+    offer_id = create_ride_offer(
+        driver_id=42,
+        origin="Edinburgh Waverley",
+        destination="Edinburgh Napier University",
+        origin_latitude=55.9521,
+        origin_longitude=-3.1889,
+        destination_latitude=55.9225,
+        destination_longitude=-3.1722,
+        travel_date="2026-11-15",
+        departure_time="09:30",
+        available_seats=3,
+        max_detour_minutes=15,
+    )
+
+    assert offer_id == 42
+
+    cursor.execute.assert_called_once()
+
+    sql, values = cursor.execute.call_args.args
+
+    assert "INSERT INTO ride_offers" in sql
+    assert "available_seats" in sql
+    assert "max_detour_minutes" in sql
+
+    assert values == (
+        42,
+        "Edinburgh Waverley",
+        55.9521,
+        -3.1889,
+        "Edinburgh Napier University",
+        55.9225,
+        -3.1722,
+        "2026-11-15",
+        "09:30",
+        3,
+        15,
+    )
+
+    connection.commit.assert_called_once()
+    connection.rollback.assert_not_called()
+    connection.close.assert_called_once()
+
+
+def test_create_ride_offer_rolls_back_on_failure(mock_database):
+    connection, cursor = mock_database
+
+    cursor.execute.side_effect = Exception("Simulated insert failure")
+
+    with pytest.raises(Exception, match="Simulated insert failure"):
+        create_ride_offer(
+            driver_id=42,
+            origin="Edinburgh Waverley",
+            destination="Edinburgh Napier University",
+            origin_latitude=55.9521,
+            origin_longitude=-3.1889,
+            destination_latitude=55.9225,
+            destination_longitude=-3.1722,
+            travel_date="2026-11-15",
+            departure_time="09:30",
+            available_seats=3,
+            max_detour_minutes=15,
+        )
+
+    connection.commit.assert_not_called()
+    connection.rollback.assert_called_once()
+    connection.close.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("driver_id", 0, "valid driver ID"),
+        ("available_seats", 0, "Available seats"),
+        ("available_seats", 6, "Available seats"),
+        ("max_detour_minutes", 7, "maximum detour"),
+    ],
+)
+def test_create_ride_offer_rejects_invalid_values(
+    mock_database, field, value, message
+):
+    arguments = {
+        "driver_id": 42,
+        "origin": "Edinburgh Waverley",
+        "destination": "Edinburgh Napier University",
+        "origin_latitude": 55.9521,
+        "origin_longitude": -3.1889,
+        "destination_latitude": 55.9225,
+        "destination_longitude": -3.1722,
+        "travel_date": "2026-11-15",
+        "departure_time": "09:30",
+        "available_seats": 3,
+        "max_detour_minutes": 15,
+    }
+
+    arguments[field] = value
+
+    with pytest.raises(ValueError, match=message):
+        create_ride_offer(**arguments)
+
+    connection, cursor = mock_database
+    cursor.execute.assert_not_called()
+    connection.commit.assert_not_called()
+    connection.close.assert_not_called()
