@@ -1,4 +1,4 @@
-# SmartRide — Intelligent Student Ride Group Optimisation
+# SmartRide - Intelligent Student Ride Group Optimisation
 
 **Student journeys, made smarter.**
 
